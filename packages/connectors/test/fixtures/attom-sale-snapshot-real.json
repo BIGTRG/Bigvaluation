@@ -1,0 +1,161 @@
+{
+  "status": {
+    "version": "1.0.0",
+    "code": 0,
+    "msg": "SuccessWithResult",
+    "total": 3,
+    "page": 1,
+    "pagesize": 10
+  },
+  "property": [
+    {
+      "identifier": {
+        "obPropId": 5129424708059,
+        "fips": "08059",
+        "apn": "064443",
+        "apnOrig": "64443",
+        "attomId": 51294247
+      },
+      "address": {
+        "line1": "4601 WINONA CT",
+        "line2": "DENVER, CO 80212",
+        "locality": "DENVER",
+        "oneLine": "4601 WINONA CT, DENVER, CO 80212",
+        "postal1": "80212",
+        "country": "US",
+        "countrySubd": "CO"
+      },
+      "location": {
+        "latitude": "39.779100",
+        "longitude": "-105.047900",
+        "distance": 0.12
+      },
+      "summary": {
+        "proptype": "SFR",
+        "propclass": "Single Family Residence / Townhouse",
+        "yearbuilt": 1910
+      },
+      "building": {
+        "size": {
+          "bldgsize": 1200,
+          "livingsize": 1200,
+          "universalsize": 1200
+        },
+        "rooms": {
+          "beds": 3,
+          "bathstotal": 2,
+          "roomsTotal": 7
+        }
+      },
+      "sale": {
+        "amount": {
+          "saleamt": 485000,
+          "salerecdate": "2024-03-15",
+          "saledisclosuretype": 0,
+          "saletype": "FULL"
+        },
+        "salesearchdate": "2024-03-15",
+        "saleTransactionDate": "2024-03-10"
+      },
+      "vintage": {
+        "lastModified": "2024-04-01",
+        "pubDate": "2024-04-01"
+      }
+    },
+    {
+      "identifier": {
+        "obPropId": 5129424708060,
+        "fips": "08031",
+        "apn": "02192-04-020-000",
+        "attomId": 184713200
+      },
+      "address": {
+        "line1": "4535 WINONA CT",
+        "line2": "DENVER, CO 80212",
+        "locality": "DENVER",
+        "oneLine": "4535 WINONA CT, DENVER, CO 80212",
+        "postal1": "80212",
+        "country": "US",
+        "countrySubd": "CO"
+      },
+      "location": {
+        "latitude": "39.778950",
+        "longitude": "-105.047800",
+        "distance": 0.05
+      },
+      "summary": {
+        "proptype": "SFR",
+        "yearbuilt": 1905
+      },
+      "building": {
+        "size": {
+          "bldgsize": 1050,
+          "livingsize": 1050,
+          "universalsize": 1050
+        },
+        "rooms": {
+          "beds": 2,
+          "bathstotal": 1,
+          "roomsTotal": 5
+        }
+      },
+      "sale": {
+        "amount": {
+          "saleamt": 410000,
+          "salerecdate": "2023-11-20"
+        },
+        "salesearchdate": "2023-11-20",
+        "saleTransactionDate": "2023-11-15"
+      },
+      "vintage": {
+        "lastModified": "2023-12-01",
+        "pubDate": "2023-12-01"
+      }
+    },
+    {
+      "identifier": {
+        "attomId": 184713210
+      },
+      "address": {
+        "line1": "4550 GROVE ST",
+        "line2": "DENVER, CO 80211",
+        "locality": "DENVER",
+        "oneLine": "4550 GROVE ST, DENVER, CO 80211",
+        "postal1": "80211",
+        "country": "US",
+        "countrySubd": "CO"
+      },
+      "location": {
+        "latitude": "39.779200",
+        "longitude": "-105.048100",
+        "distance": 0.31
+      },
+      "summary": {
+        "proptype": "SFR",
+        "yearbuilt": 1920
+      },
+      "building": {
+        "size": {
+          "universalsize": 1580,
+          "livingsize": 1580
+        },
+        "rooms": {
+          "beds": 3,
+          "bathstotal": 2,
+          "roomsTotal": 8
+        }
+      },
+      "sale": {
+        "amount": {
+          "saleamt": 575000,
+          "salerecdate": "2024-06-01"
+        },
+        "salesearchdate": "2024-06-01"
+      },
+      "vintage": {
+        "lastModified": "2024-07-01",
+        "pubDate": "2024-07-01"
+      }
+    }
+  ]
+}

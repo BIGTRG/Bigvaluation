@@ -16,6 +16,11 @@ export interface ServerConfig {
   houseCanaryApiKey?: string;
   houseCanarySecret?: string;
 
+  /** Anthropic API key for Vision condition scoring (§4.1). */
+  anthropicApiKey?: string;
+  /** Claude model for vision scoring. Default: claude-sonnet-4-20250514. */
+  visionModel?: string;
+
   /** Base URLs used in generated links. */
   captureBaseUrl: string;
   reportsBaseUrl: string;
@@ -41,6 +46,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     attomApiKey: strEnv(env.ATTOM_API_KEY),
     houseCanaryApiKey: strEnv(env.HOUSECANARY_API_KEY),
     houseCanarySecret: strEnv(env.HOUSECANARY_API_SECRET),
+
+    anthropicApiKey: strEnv(env.ANTHROPIC_API_KEY),
+    visionModel: strEnv(env.VISION_MODEL),
 
     captureBaseUrl: strEnv(env.CAPTURE_BASE_URL) ?? 'https://capture.example.com',
     reportsBaseUrl: strEnv(env.REPORTS_BASE_URL) ?? 'https://reports.example.com',
