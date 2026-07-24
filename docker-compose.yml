@@ -1,0 +1,59 @@
+# {{BRAND_NAME}} Valuation Suite — local / single-box stack (§6: Hetzner target).
+# Postgres (§8 data), MinIO (S3-compatible object storage), and the API service.
+#
+#   docker compose up --build
+#   curl localhost:8787/health
+#
+# NOTE: the SEED_API_KEY below is a DEV convenience. Rotate it (and the DB /
+# MinIO credentials) before any real deployment.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: flip
+      POSTGRES_PASSWORD: flip
+      POSTGRES_DB: flipmaster
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flip -d flipmaster"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - miniodata:/data
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # console
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "8787"
+      NODE_ENV: production
+      DATABASE_URL: postgres://flip:flip@db:5432/flipmaster
+      MIGRATE_ON_BOOT: "1"
+      SEED_API_KEY: fmk_demo.secret123
+      REPORTS_BASE_URL: http://localhost:8787/reports
+      CAPTURE_BASE_URL: http://localhost:8787/capture
+      # ATTOM_API_KEY / HOUSECANARY_API_KEY / HOUSECANARY_API_SECRET:
+      #   set these to run on live data instead of the mock provider.
+    ports:
+      - "8787:8787"
+
+volumes:
+  pgdata:
+  miniodata:

@@ -1,0 +1,22 @@
+{
+  "name": "@flip-master/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "{{BRAND_NAME}} server — composition root wiring engine + connectors + orchestration + api + persistence into one deployable service.",
+  "type": "module",
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "dev": "node --watch src/main.ts",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

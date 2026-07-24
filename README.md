@@ -30,10 +30,12 @@ packages/
                       metering. Framework-free on Node http.
   persistence/        §8 data model — Postgres schema + stores behind an
                       injectable SqlClient. Swap the in-memory stores for these.
+  server/             Composition root — wires every package into one deployable
+                      service from env config. Docker + docker-compose at root.
 ```
 
-Planned (see the build brief): the capture app, rendering, and Scope-of-Work
-Studio modules; deployment (Hetzner + MinIO + Postgres).
+Planned (see the build brief): the capture app (§4.1), rendering (§4.4), and the
+Scope-of-Work Studio (§4.3) — clean injection points already exist in the server.
 
 ## Architecture principle
 
@@ -49,19 +51,32 @@ Requires **Node ≥ 23** (native TypeScript type-stripping — no build step nee
 to run or test).
 
 ```bash
-# Valuation engine
-cd packages/valuation-engine
-npm test                  # 36 tests, zero dependencies
-node examples/demo.ts     # prints a full deal sheet
+# Run the whole service (in-memory, mock data, seeded key — zero setup):
+SEED_API_KEY=fmk_demo.secret123 node packages/server/src/main.ts
+curl localhost:8787/health
 
-# Report builder
-cd ../report-builder
-npm test                  # 7 tests
-node examples/generate.ts # writes examples/out/report.html (web + PDF source)
+# Run every test suite (112 tests across 7 packages):
+npm test
+
+# Or explore a single package:
+cd packages/valuation-engine && node examples/demo.ts   # prints a full deal sheet
+cd packages/report-builder   && node examples/generate.ts
 ```
 
 Each package has its own `README.md` and (for the engine) a `SPEC.md`
 formalizing the valuation math and the accuracy/backtest loop.
+
+## Deploy (§6: Hetzner + MinIO + Postgres)
+
+```bash
+cp .env.example .env          # then edit secrets
+docker compose up --build     # Postgres + MinIO + the API service
+curl localhost:8787/health
+```
+
+The `Dockerfile` runs the server on Node's native TypeScript support (the only
+npm dependency is the `pg` driver). See `docker-compose.yml` for the single-box
+stack. Set `ATTOM_API_KEY` (+ HouseCanary keys) to switch from mock to live data.
 
 ## Tech stack (locked)
 
@@ -79,8 +94,9 @@ Claude (primary AI) · ATTOM / HouseCanary / MLS (data & AVM) · Regrid + Shovel
 | Orchestration pipeline (§7) | ✅ Built + tested (5-stage DAG, retries, webhook events) |
 | Licensing API (§9) | ✅ Built + tested (auth, scopes, metering, webhooks; framework-free) |
 | Postgres persistence (§8) | ✅ Built + tested (schema + stores behind SqlClient; pg adapter opt-in) |
-| Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned |
-| Deployment (Hetzner + MinIO + Postgres) | ⏳ Planned |
+| Composition root + Docker deploy (§6) | ✅ Built + tested (server wires all packages; Dockerfile + compose) |
+| Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned (injection points ready) |
+| Live data wiring (verify ATTOM/HouseCanary fields) | ⏳ Needs API keys |
 
 ---
 

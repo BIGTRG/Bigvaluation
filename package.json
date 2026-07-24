@@ -1,0 +1,17 @@
+{
+  "name": "flip-master",
+  "version": "0.1.0",
+  "private": true,
+  "description": "{{BRAND_NAME}} Valuation Suite — monorepo. Automated valuations, not appraisals.",
+  "type": "module",
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "start": "node packages/server/src/main.ts",
+    "test": "node scripts/test-all.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}
