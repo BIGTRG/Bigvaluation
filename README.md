@@ -20,12 +20,12 @@ packages/
                       deal math, rental value. Pure, dependency-free TypeScript.
   report-builder/     Renders a Valuation into a branded, self-contained HTML
                       report (web + PDF source). Consumes the engine's output.
+  connectors/         Property Data Hub + swappable ATTOM/HouseCanary/MLS
+                      adapters. Normalizes, falls back, audits — feeds the engine.
 ```
 
-Planned (see the build brief): `connectors/` (ATTOM, HouseCanary, MLS, Regrid,
-Shovels behind swappable adapters), `orchestration/` (the 5-stage async
-pipeline), `api/` (licensing surface, §9), and the capture / render / scope
-modules.
+Planned (see the build brief): `orchestration/` (the 5-stage async pipeline),
+`api/` (licensing surface, §9), and the capture / render / scope modules.
 
 ## Architecture principle
 
@@ -67,8 +67,8 @@ Claude (primary AI) · ATTOM / HouseCanary / MLS (data & AVM) · Regrid + Shovel
 |---|---|
 | Valuation engine (§4.5–4.6) | ✅ Built + tested |
 | Report builder (§3) | ✅ Built + tested |
-| Connectors (ATTOM / HouseCanary / MLS) | ⏳ Next |
-| Orchestration pipeline (§7) | ⏳ Planned |
+| Connectors + Property Data Hub (§6–7) | ✅ Built + tested (mock live; ATTOM/HouseCanary adapters need live-API field verification) |
+| Orchestration pipeline (§7) | ⏳ Next |
 | Licensing API (§9) | ⏳ Planned |
 | Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned |
 
