@@ -28,10 +28,12 @@ packages/
   api/                Licensing/HTTP API (§9) — valuations, reports, watches,
                       capture sessions, scope-of-work, webhooks. Key auth +
                       metering. Framework-free on Node http.
+  persistence/        §8 data model — Postgres schema + stores behind an
+                      injectable SqlClient. Swap the in-memory stores for these.
 ```
 
-Planned (see the build brief): Postgres persistence (§8), the capture app,
-rendering, and Scope-of-Work Studio modules.
+Planned (see the build brief): the capture app, rendering, and Scope-of-Work
+Studio modules; deployment (Hetzner + MinIO + Postgres).
 
 ## Architecture principle
 
@@ -76,8 +78,9 @@ Claude (primary AI) · ATTOM / HouseCanary / MLS (data & AVM) · Regrid + Shovel
 | Connectors + Property Data Hub (§6–7) | ✅ Built + tested (mock live; ATTOM/HouseCanary adapters need live-API field verification) |
 | Orchestration pipeline (§7) | ✅ Built + tested (5-stage DAG, retries, webhook events) |
 | Licensing API (§9) | ✅ Built + tested (auth, scopes, metering, webhooks; framework-free) |
-| Postgres persistence (§8) | ⏳ Next (swap in-memory stores) |
+| Postgres persistence (§8) | ✅ Built + tested (schema + stores behind SqlClient; pg adapter opt-in) |
 | Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned |
+| Deployment (Hetzner + MinIO + Postgres) | ⏳ Planned |
 
 ---
 
