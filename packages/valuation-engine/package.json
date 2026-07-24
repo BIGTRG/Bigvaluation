@@ -1,0 +1,21 @@
+{
+  "name": "@flip-master/valuation-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "{{BRAND_NAME}} automated valuation engine — As-Is + 3-tier ARV, comps, confidence, deal math. Not an appraisal.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "test:watch": "node --test --watch \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
