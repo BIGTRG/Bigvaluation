@@ -22,10 +22,13 @@ packages/
                       report (web + PDF source). Consumes the engine's output.
   connectors/         Property Data Hub + swappable ATTOM/HouseCanary/MLS
                       adapters. Normalizes, falls back, audits — feeds the engine.
+  orchestration/      Async 5-stage job pipeline (Capture→Understand→Value→
+                      Visualize→Deliver) with retries + webhook events. Composes
+                      connectors + engine + report builder.
 ```
 
-Planned (see the build brief): `orchestration/` (the 5-stage async pipeline),
-`api/` (licensing surface, §9), and the capture / render / scope modules.
+Planned (see the build brief): `api/` (licensing surface, §9), and the capture /
+render / scope modules.
 
 ## Architecture principle
 
@@ -68,8 +71,8 @@ Claude (primary AI) · ATTOM / HouseCanary / MLS (data & AVM) · Regrid + Shovel
 | Valuation engine (§4.5–4.6) | ✅ Built + tested |
 | Report builder (§3) | ✅ Built + tested |
 | Connectors + Property Data Hub (§6–7) | ✅ Built + tested (mock live; ATTOM/HouseCanary adapters need live-API field verification) |
-| Orchestration pipeline (§7) | ⏳ Next |
-| Licensing API (§9) | ⏳ Planned |
+| Orchestration pipeline (§7) | ✅ Built + tested (5-stage DAG, retries, webhook events) |
+| Licensing API (§9) | ⏳ Next |
 | Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned |
 
 ---
