@@ -25,10 +25,13 @@ packages/
   orchestration/      Async 5-stage job pipeline (Capture→Understand→Value→
                       Visualize→Deliver) with retries + webhook events. Composes
                       connectors + engine + report builder.
+  api/                Licensing/HTTP API (§9) — valuations, reports, watches,
+                      capture sessions, scope-of-work, webhooks. Key auth +
+                      metering. Framework-free on Node http.
 ```
 
-Planned (see the build brief): `api/` (licensing surface, §9), and the capture /
-render / scope modules.
+Planned (see the build brief): Postgres persistence (§8), the capture app,
+rendering, and Scope-of-Work Studio modules.
 
 ## Architecture principle
 
@@ -72,7 +75,8 @@ Claude (primary AI) · ATTOM / HouseCanary / MLS (data & AVM) · Regrid + Shovel
 | Report builder (§3) | ✅ Built + tested |
 | Connectors + Property Data Hub (§6–7) | ✅ Built + tested (mock live; ATTOM/HouseCanary adapters need live-API field verification) |
 | Orchestration pipeline (§7) | ✅ Built + tested (5-stage DAG, retries, webhook events) |
-| Licensing API (§9) | ⏳ Next |
+| Licensing API (§9) | ✅ Built + tested (auth, scopes, metering, webhooks; framework-free) |
+| Postgres persistence (§8) | ⏳ Next (swap in-memory stores) |
 | Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned |
 
 ---
