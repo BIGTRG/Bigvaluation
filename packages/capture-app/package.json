@@ -1,0 +1,17 @@
+{
+  "name": "@flip-master/capture-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mobile property capture web app (§4.1–4.4) — tokenized photo capture, guided walkthrough, condition scoring trigger.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "test:watch": "node --test --watch \"test/**/*.test.ts\""
+  }
+}
