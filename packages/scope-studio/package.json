@@ -1,0 +1,21 @@
+{
+  "name": "@flip-master/scope-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scope-of-Work Studio (§4.3) — generates itemized rehab scopes per tier from property facts + condition score.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "test:watch": "node --test --watch \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
