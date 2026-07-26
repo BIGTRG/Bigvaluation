@@ -16,6 +16,7 @@ import type {
 import { Router } from './router.ts';
 import { Authenticator, hasScope } from './auth.ts';
 import type { Orchestrator, JobStore, WebhookDispatcher, Job } from '../../orchestration/src/index.ts';
+import { buildScope, buildScopes, toRehabScopes, type ScopeSubject } from '../../scope-studio/src/index.ts';
 
 export interface AppDeps {
   orchestrator: Orchestrator;
@@ -187,9 +188,55 @@ export class Api {
   private createScope = async (ctx: HandlerCtx): Promise<ApiResponse> => {
     const body = asObject(ctx.req.body);
     const rawItems = Array.isArray(body.lineItems) ? body.lineItems : null;
+
+    // If no lineItems provided, generate a scope from subject + tier via the Studio
     if (!rawItems || rawItems.length === 0) {
-      return json(400, { error: 'invalid_request', detail: 'lineItems[] is required' });
+      const subjectRaw = asObject(body.subject);
+      if (!subjectRaw || (typeof subjectRaw.sqft !== 'number' && typeof subjectRaw.address !== 'string')) {
+        return json(400, { error: 'invalid_request', detail: 'Provide lineItems[] or subject with sqft + conditionScore to auto-generate' });
+      }
+      const sqft = Number(subjectRaw.sqft) || 0;
+      const conditionScore = Number(subjectRaw.conditionScore) || 3;
+      const finishedSqft = typeof subjectRaw.finishedSqft === 'number' ? subjectRaw.finishedSqft : undefined;
+      if (sqft <= 0) {
+        return json(400, { error: 'invalid_request', detail: 'subject.sqft must be a positive number' });
+      }
+      const scopeSubject: ScopeSubject = { sqft, conditionScore, finishedSqft };
+      const tier = typeof body.tier === 'string' && ['light', 'medium', 'high'].includes(body.tier)
+        ? (body.tier as 'light' | 'medium' | 'high')
+        : undefined;
+
+      if (tier) {
+        // Single tier
+        const result = buildScope(scopeSubject, tier);
+        const scope = {
+          id: ctx.newId('sow'),
+          accountId: ctx.auth.accountId,
+          subject: subjectRaw,
+          lineItems: result.lineItems,
+          createdAt: ctx.now,
+        };
+        await this.deps.scopes.save(scope);
+        return json(201, { id: scope.id, tier: result.tier, lineItems: result.lineItems, totalUsd: result.totalUsd, breakdown: result.breakdown });
+      } else {
+        // All three tiers
+        const results = buildScopes(scopeSubject);
+        const scope = {
+          id: ctx.newId('sow'),
+          accountId: ctx.auth.accountId,
+          subject: subjectRaw,
+          lineItems: results.medium.lineItems,
+          createdAt: ctx.now,
+        };
+        await this.deps.scopes.save(scope);
+        const tiers = Object.fromEntries(
+          Object.entries(results).map(([t, r]) => [t, { lineItems: r.lineItems, totalUsd: r.totalUsd, breakdown: r.breakdown }]),
+        );
+        return json(201, { id: scope.id, tiers, rehabScopes: toRehabScopes(results) });
+      }
     }
+
+    // Original path: explicit lineItems provided
     const lineItems = rawItems
       .map((it) => asObject(it))
       .filter((it): it is Record<string, unknown> => !!it)
