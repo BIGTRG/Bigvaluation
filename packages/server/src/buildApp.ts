@@ -44,6 +44,7 @@ import type {
 import type { ServerConfig } from './config.ts';
 import { hasRealProviders } from './config.ts';
 import { parseSeedKey } from './seed.ts';
+import { ConditionScorer } from '../../vision/src/index.ts';
 
 export interface StoresBundle {
   jobStore: JobStore;
@@ -75,9 +76,15 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
 
   const stages = buildDefaultStages({
     hub,
-    // §4.1 Vision: real impl scores condition from captured media via Claude.
-    // Until then, callers pass conditionScore in the request (else default 3).
-    vision: undefined,
+    // §4.1 Vision: condition scoring from captured media via Claude.
+    // When ANTHROPIC_API_KEY is set, uses Claude Sonnet vision to score photos.
+    // Otherwise, callers pass conditionScore in the request (else default 3).
+    vision: cfg.anthropicApiKey
+      ? new ConditionScorer({
+          apiKey: cfg.anthropicApiKey,
+          model: cfg.visionModel,
+        }).visionHandler()
+      : undefined,
     // §4.4 Renders: real impl calls a render/staging API.
     render: undefined,
     // §4.x Publish: persist the report and return its URL. HTML is already

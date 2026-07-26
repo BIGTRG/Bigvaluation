@@ -1,0 +1,117 @@
+{
+  "status": {
+    "version": "1.0.0",
+    "code": 0,
+    "msg": "SuccessWithResult",
+    "total": 1,
+    "page": 1,
+    "pagesize": 10,
+    "transactionID": "2e9523c8407f2d4eade9a30bceaa4a60"
+  },
+  "property": [
+    {
+      "identifier": {
+        "Id": 184713191,
+        "fips": "08031",
+        "apn": "02192-04-018-000",
+        "attomId": 184713191
+      },
+      "lot": {
+        "lotnum": "31,32",
+        "lotsize1": 0.1076676,
+        "lotsize2": 4690,
+        "pooltype": "NO POOL"
+      },
+      "area": {
+        "blockNum": "36",
+        "loctype": "VIEW - NONE",
+        "countrysecsubd": "Denver",
+        "countyuse1": "113 ",
+        "muncode": "DE",
+        "munname": "DENVER",
+        "srvyRange": "68W",
+        "srvySection": "19",
+        "srvyTownship": "03S",
+        "subdname": "BERKELEY"
+      },
+      "address": {
+        "country": "US",
+        "countrySubd": "CO",
+        "line1": "4529 WINONA CT",
+        "line2": "DENVER, CO 80212",
+        "locality": "DENVER",
+        "matchCode": "ExaStr",
+        "oneLine": "4529 WINONA CT, DENVER, CO 80212",
+        "postal1": "80212",
+        "postal2": "2512",
+        "postal3": "C037"
+      },
+      "location": {
+        "accuracy": "Rooftop",
+        "latitude": "39.778926",
+        "longitude": "-105.047775",
+        "distance": 0,
+        "geoid": "CO08031, CS0891007, DB0803360, ND0000119198, ND0004861239, PL0820000, SB0000076114, SB0000076155, SB0000076161, SB0000135819, SB0000143772, ZI80212"
+      },
+      "summary": {
+        "absenteeInd": "ABSENTEE(MAIL AND SITUS NOT =)",
+        "propclass": "Single Family Residence / Townhouse",
+        "propsubtype": "Residential",
+        "proptype": "SFR",
+        "yearbuilt": 1900,
+        "propLandUse": "SFR",
+        "propIndicator": "10",
+        "legal1": "BERKELEY B36 L31 & S/2 OF L32 EXC REAR 8FT TO CITY"
+      },
+      "utilities": {
+        "heatingfuel": "GAS",
+        "heatingtype": "CENTRAL"
+      },
+      "building": {
+        "size": {
+          "bldgsize": 934,
+          "grosssize": 1414,
+          "grosssizeadjusted": 934,
+          "groundfloorsize": 934,
+          "livingsize": 934,
+          "sizeInd": "LIVING SQFT",
+          "universalsize": 934
+        },
+        "rooms": {
+          "bathfixtures": 5,
+          "bathsfull": 1,
+          "bathstotal": 1,
+          "beds": 2,
+          "roomsTotal": 5
+        },
+        "interior": {
+          "bsmtsize": 478,
+          "bsmttype": "UNFINISHED",
+          "fplccount": 1,
+          "fplcind": "Y",
+          "fplctype": "YES"
+        },
+        "construction": {
+          "condition": "GOOD",
+          "wallType": "BRICK"
+        },
+        "parking": {
+          "prkgSize": 240,
+          "prkgSpaces": "1"
+        },
+        "summary": {
+          "archStyle": "OTHER",
+          "levels": 1,
+          "quality": "EXCELLENT",
+          "unitsCount": "1",
+          "view": "VIEW - NONE",
+          "yearbuilteffective": 2014
+        }
+      },
+      "vintage": {
+        "lastModified": "2022-04-14",
+        "pubDate": "2022-04-14"
+      }
+    }
+  ]
+}
