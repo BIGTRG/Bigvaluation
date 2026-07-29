@@ -19,6 +19,8 @@ export interface RequestHandler {
 export interface HttpServerOptions {
   /** Optional sub-handlers by path prefix, checked before the API. */
   mounts?: { prefix: string; handler: RequestHandler }[];
+  /** Where a browser landing on `/` is sent (e.g. the web app sign-in). */
+  rootRedirect?: string;
 }
 
 export function createHttpServer(api: Api, opts: HttpServerOptions = {}): Server {
@@ -67,6 +69,12 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
   }
 
   const apiReq: ApiRequest = { method, path: url.pathname, headers, query, body, rawBody };
+  if (url.pathname === '/' && opts.rootRedirect) {
+    res.writeHead(302, { location: opts.rootRedirect });
+    res.end();
+    return;
+  }
+
   const mount = opts.mounts?.find(
     (m) => url.pathname === m.prefix || url.pathname.startsWith(`${m.prefix}/`),
   );

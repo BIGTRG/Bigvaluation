@@ -13,6 +13,7 @@ async function main(): Promise<void> {
   const app = await buildApp(cfg);
   const server = createHttpServer(app.api, {
     mounts: app.webapp ? [{ prefix: '/app', handler: app.webapp }] : [],
+    rootRedirect: app.webapp ? '/app' : undefined,
   });
 
   // §5.3 live valuation monitoring — sweep watches on a fixed cadence.
