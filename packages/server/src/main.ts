@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Server entrypoint.
+ * ValueProof — Server entrypoint.
  * Builds the app from env config, starts the HTTP server, and shuts down
  * gracefully on SIGTERM/SIGINT. This is what the Docker image runs.
  */
@@ -38,7 +38,7 @@ async function main(): Promise<void> {
 
   server.listen(cfg.port, () => {
     console.log(
-      `{{BRAND_NAME}} API listening on :${cfg.port} ` +
+      `ValueProof API listening on :${cfg.port} ` +
         `[storage=${app.mode.storage} data=${app.mode.data} pdf=${app.mode.pdf} ` +
         `watch=${cfg.watchIntervalMs > 0 ? `${cfg.watchIntervalMs}ms` : 'off'} env=${cfg.nodeEnv}]`,
     );

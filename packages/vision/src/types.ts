@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Vision (§4.1)
+ * ValueProof — Vision (§4.1)
  * Types for the AI condition-scoring module.
  */
 

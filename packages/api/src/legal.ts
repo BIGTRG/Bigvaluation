@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Legal pages (§4.7, §10)
+ * ValueProof — Legal pages (§4.7, §10)
  * Terms of Service and Privacy Policy served as public routes so every
  * deployment ships them from day one. Plain, self-contained HTML — no build
  * step, no framework. Brand tokens resolve at find-and-replace time.
@@ -24,12 +24,12 @@ function page(title: string, body: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title} — {{BRAND_NAME}}</title>
+<title>${title} — ValueProof</title>
 <style>${STYLE}</style>
 </head>
 <body>
 ${body}
-<footer>{{BRAND_NAME}} · {{BRAND_DOMAIN}} · Automated valuations are estimates, not licensed appraisals.</footer>
+<footer>ValueProof · valueproof.net · Automated valuations are estimates, not licensed appraisals.</footer>
 </body>
 </html>`;
 }
@@ -40,7 +40,7 @@ export const TERMS_HTML: string = page(
 <p class="updated">Working draft — subject to counsel review before public launch.</p>
 
 <h2>1. The Service</h2>
-<p>{{BRAND_NAME}} provides automated, data-driven property analytics: estimated as-is prices, estimated after-repair values (ARV) across rehab scopes, rehab cost estimates, deal math, rental analysis, and related reports and APIs (the "Service").</p>
+<p>ValueProof provides automated, data-driven property analytics: estimated as-is prices, estimated after-repair values (ARV) across rehab scopes, rehab cost estimates, deal math, rental analysis, and related reports and APIs (the "Service").</p>
 
 <div class="critical">
 <h2>2. Business-Purpose, Investor-Only Use</h2>
@@ -91,8 +91,8 @@ export const PRIVACY_HTML: string = page(
 <p>Report inputs, data-source logs, and attestations are retained as part of the audit trail required by our compliance framework. Capture media is retained for the period stated in your plan, then deleted.</p>
 
 <h2>6. Your choices</h2>
-<p>Account holders may request access, correction, or deletion of personal data at privacy@{{BRAND_DOMAIN}}, subject to legal retention duties. Depending on your state of residence you may have additional rights.</p>
+<p>Account holders may request access, correction, or deletion of personal data at privacy@valueproof.net, subject to legal retention duties. Depending on your state of residence you may have additional rights.</p>
 
 <h2>7. Not a consumer reporting agency</h2>
-<p>{{BRAND_NAME}} provides property analytics, not consumer reports. The Service may not be used to determine any individual's eligibility for credit, employment, insurance, or housing.</p>`
+<p>ValueProof provides property analytics, not consumer reports. The Service may not be used to determine any individual's eligibility for credit, employment, insurance, or housing.</p>`
 );

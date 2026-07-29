@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * Mock provider. Deterministic, offline, no network — powers local dev, the
  * end-to-end example, and tests. Implements every provider interface so the
  * full data → valuation → report pipeline runs with nothing external.

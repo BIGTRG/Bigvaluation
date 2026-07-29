@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * Node http adapter. Translates real requests into `ApiRequest`, calls
  * `Api.handle`, and serializes the `ApiResponse`. This is the ONLY file that
  * touches sockets — everything else is transport-agnostic and unit-testable.

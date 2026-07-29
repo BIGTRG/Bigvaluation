@@ -2,7 +2,7 @@
   "name": "@flip-master/api",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} licensing API (§9) — framework-free HTTP surface: valuations, reports, watches, capture sessions, scope-of-work, webhooks. API-key auth + usage metering.",
+  "description": "ValueProof licensing API (§9) — framework-free HTTP surface: valuations, reports, watches, capture sessions, scope-of-work, webhooks. API-key auth + usage metering.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Rehab budgeting (§3 "Rehab cost & deal math").
  *
  * Line items (from the Scope-of-Work Studio, §4.3) win when present; otherwise

@@ -1,4 +1,4 @@
--- {{BRAND_NAME}} — 0004: Material Intelligence (§4.3 add-on)
+-- ValueProof — 0004: Material Intelligence (§4.3 add-on)
 BEGIN;
 
 -- Analyst runs: actual materials in, true finish tier + explained ARV out.

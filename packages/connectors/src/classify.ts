@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * Renovated-comp classification.
  *
  * Public records rarely state whether a sale was renovated. The AUTHORITATIVE

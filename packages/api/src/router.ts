@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * Minimal path router. Compiles patterns like `/valuations/:id` into matchers
  * that extract params. No dependencies; the whole API is framework-free.
  */

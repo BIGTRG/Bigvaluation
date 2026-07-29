@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Orchestrator: assembles a full Valuation from normalized inputs (§7 "Value"
  * stage). Pure and synchronous — the connector layer (ATTOM/HouseCanary/MLS)
  * fetches and normalizes data; this module turns that data into the IP output.

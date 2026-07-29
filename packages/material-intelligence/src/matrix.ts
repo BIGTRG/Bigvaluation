@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Material Intelligence (§4.3 add-on)
+ * ValueProof — Material Intelligence (§4.3 add-on)
  * The material-to-value matrix: the language of materials mapped to finish
  * level. Each category lists keyword signals per tier; the analyst engine
  * matches an investor's actual material choices against these signals to

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Report Builder
+ * ValueProof — Report Builder
  * Brand tokens (build brief §12). Everything name/logo/color lives here so the
  * whole report re-skins in one pass when the name and {{LOGO}} are chosen.
  */
@@ -33,8 +33,8 @@ export interface Branding {
 
 /** §12 concept palette. Swap when the brand is set. */
 export const DEFAULT_BRANDING: Branding = {
-  brandName: '{{BRAND_NAME}}',
-  brandDomain: '{{BRAND_DOMAIN}}',
+  brandName: 'ValueProof',
+  brandDomain: 'valueproof.net',
   logoHtml: null,
   colors: {
     navy: '#0D1B2A',

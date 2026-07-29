@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * Property Data Hub (§7). Orchestrates providers into one normalized bundle:
  *   - tries providers in priority order, falling back on empty/error (§10)
  *   - merges + dedupes comps across providers

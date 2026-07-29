@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * ATTOM adapter (property data + comps). Build brief §6: "ATTOM (start)".
  *
  * ⚠️ FIELD PATHS ARE ILLUSTRATIVE. ATTOM's response schema must be verified

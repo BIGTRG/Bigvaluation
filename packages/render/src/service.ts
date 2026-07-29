@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — RenderService (§4.4)
+ * ValueProof — RenderService (§4.4)
  * Orchestrates the two layers per room: renovation first, then staging on top
  * of the renovated image. A provider failure on one room never blocks the
  * others (the pipeline treats visualize as best-effort).

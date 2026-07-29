@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * As-Is value (§4.5).
  *
  * As-Is = SqFt × (Area As-Is $/sqft × ConditionFactor), blended ~50/50 with a

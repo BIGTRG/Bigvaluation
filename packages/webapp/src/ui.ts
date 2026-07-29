@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Web app shell + design system
+ * ValueProof — Web app shell + design system
  * Custom, self-contained design on the §12 concept palette: deep navy, gold,
  * green, with per-tier accents. Serif display / sans body, top navigation
  * (no sidebar), editorial report-desk feel — a number a lender can underwrite
@@ -151,12 +151,12 @@ export function page(opts: PageOptions, body: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(opts.title)} — {{BRAND_NAME}}</title>
+<title>${esc(opts.title)} — ValueProof</title>
 <style>${STYLES}</style>
 </head>
 <body>
 <header class="topbar">
-  <a class="wordmark" href="/app">{{BRAND_NAME}}<b>.</b></a>
+  <a class="wordmark" href="/app">ValueProof<b>.</b></a>
   ${nav}
 </header>
 <main class="wrap">

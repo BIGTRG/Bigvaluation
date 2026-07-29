@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Live valuation monitoring (§5.3)
+ * ValueProof — Live valuation monitoring (§5.3)
  * Watched properties re-value automatically as comps/market shift. The
  * WatchMonitor ticks on a schedule (server wiring decides the cadence),
  * re-runs the valuation for each watch, and fires a `watch.changed` webhook

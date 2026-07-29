@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — PDF connector (§3 "branded PDF", §6 swappable connectors)
+ * ValueProof — PDF connector (§3 "branded PDF", §6 swappable connectors)
  * Gotenberg adapter: converts the self-contained report HTML into a PDF via a
  * self-hosted Gotenberg container (Chromium). Ships in docker-compose; set
  * GOTENBERG_URL to enable `GET /reports/:id?format=pdf`.

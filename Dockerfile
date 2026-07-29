@@ -1,4 +1,4 @@
-# {{BRAND_NAME}} Valuation Suite — API service image.
+# ValueProof Valuation Suite — API service image.
 # Runs the composition-root server on Node's native TypeScript support (no build
 # step). The only npm dependency is the `pg` driver, installed from the root
 # package.json so it resolves from packages/persistence/src/pgClient.ts.

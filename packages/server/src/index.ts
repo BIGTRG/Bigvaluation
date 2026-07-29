@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Server (composition root)
+ * ValueProof — Server (composition root)
  * Public API for programmatic use (tests, embedding). The runnable entrypoint
  * is main.ts.
  */

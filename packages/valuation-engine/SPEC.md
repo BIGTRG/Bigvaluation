@@ -1,4 +1,4 @@
-# {{BRAND_NAME}} — Valuation Engine Specification
+# ValueProof — Valuation Engine Specification
 
 > The IP core (build brief §4.5–4.6, §7 engine 2). Turns normalized property
 > data into an **As-Is value** and a **three-tier After-Repair Value** with

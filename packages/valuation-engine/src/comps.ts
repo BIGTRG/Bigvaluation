@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Comp selection: radius widening + match weighting (§4.5).
  *
  * "Pull comps tightest (2 mi) first; widen to 3 / 5 mi if sparse; show all

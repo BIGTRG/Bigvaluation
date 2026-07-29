@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Scope-of-Work Studio (§4.3)
+ * ValueProof — Scope-of-Work Studio (§4.3)
  *
  * `buildScope()` / `buildScopes()` turn property facts + a target tier into
  * itemized, priced line items. Finish work is tier-driven and scaled by a

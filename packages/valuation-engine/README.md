@@ -1,6 +1,6 @@
 # @flip-master/valuation-engine
 
-The **IP core** of {{BRAND_NAME}} — a pure, dependency-free TypeScript engine
+The **IP core** of ValueProof — a pure, dependency-free TypeScript engine
 that turns normalized property data into an **As-Is value** and a **three-tier
 After-Repair Value (Light / Medium / High)** with confidence, deal math, rental
 value, and a full audit trail.

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * The transport-agnostic application: routes → auth → scope → metering →
  * handler. `handle(ApiRequest)` returns an `ApiResponse` with no sockets
  * involved, so every endpoint is unit-testable directly.
@@ -151,7 +151,7 @@ export class Api {
 
   // --- handlers ------------------------------------------------------------
 
-  private health = async (): Promise<ApiResponse> => json(200, { status: 'ok', service: '{{BRAND_NAME}} API' });
+  private health = async (): Promise<ApiResponse> => json(200, { status: 'ok', service: 'ValueProof API' });
 
   private createValuation = async (ctx: HandlerCtx): Promise<ApiResponse> => {
     const body = asObject(ctx.req.body);
@@ -414,7 +414,7 @@ export class Api {
 
     const id = ctx.newId('mlk');
     const token = `${ctx.newId('sowt')}${Math.random().toString(36).slice(2, 10)}`;
-    const base = (this.deps.materials.linkBaseUrl ?? 'https://{{BRAND_DOMAIN}}').replace(/\/$/, '');
+    const base = (this.deps.materials.linkBaseUrl ?? 'https://valueproof.net').replace(/\/$/, '');
     const link: MaterialLinkRecord = {
       id,
       token,

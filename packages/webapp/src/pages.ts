@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Web app pages
+ * ValueProof — Web app pages
  * Pure render functions: data in, HTML out. All state comes from the API.
  */
 
@@ -11,7 +11,7 @@ type Flash = PageOptions['flash'];
 export function loginPage(flash?: Flash): string {
   return page({ title: 'Sign in', authed: false, active: 'none', flash }, `
 <div class="login-hero"><div class="card login-card">
-  <div class="mark wordmark" style="color: var(--navy)">{{BRAND_NAME}}<b style="color: var(--gold)">.</b></div>
+  <div class="mark wordmark" style="color: var(--navy)">ValueProof<b style="color: var(--gold)">.</b></div>
   <div class="tag">As-Is and after-repair values for investors and private lenders.</div>
   <form class="stack" method="post" action="/app/login">
     <label for="apiKey">API key</label>
@@ -201,7 +201,7 @@ export function billingPage(v: BillingView, flash?: Flash): string {
   <div class="card">
     <h2>API partner</h2>
     <p class="hint">Volume / rev-share licensing for platforms. Provisioned by contract.</p>
-    <div class="actions"><a class="btn small" href="mailto:partners@{{BRAND_DOMAIN}}">Contact us</a></div>
+    <div class="actions"><a class="btn small" href="mailto:partners@valueproof.net">Contact us</a></div>
   </div>
 </div>`
     : `<div class="card"><div class="empty">Online billing is not enabled on this deployment. Contact your administrator.</div></div>`;

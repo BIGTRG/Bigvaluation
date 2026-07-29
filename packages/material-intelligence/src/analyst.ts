@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Material Intelligence analyst engine (§4.3 add-on)
+ * ValueProof — Material Intelligence analyst engine (§4.3 add-on)
  *
  * Reads an investor's ACTUAL material choices (guided builder, upload, or
  * borrower link), maps each line to a finish score via the material-to-value

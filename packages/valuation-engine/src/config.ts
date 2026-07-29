@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Market-tunable configuration.
  *
  * Everything the build brief calls "tunable per market" lives here so the IP

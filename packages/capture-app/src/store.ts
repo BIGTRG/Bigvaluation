@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Capture App (§4.1–4.4)
+ * ValueProof — Capture App (§4.1–4.4)
  * In-memory capture session store for dev/testing.
  * Postgres implementation follows the same pattern as persistence/src/*.
  */

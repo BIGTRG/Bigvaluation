@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * The adapter contracts. The build brief's rule (§6): "Wrap every external
  * dependency behind a connector/adapter so any vendor can be swapped without
  * touching the app." These interfaces are that seam.

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Persistence
+ * ValueProof — Persistence
  * Real Postgres adapter. This is the ONLY file that imports `pg`, so it is kept
  * out of the package index and the test path — install the driver only where
  * you actually connect:  `npm install pg`.

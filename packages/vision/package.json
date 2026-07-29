@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "{{BRAND_NAME}} Vision — AI condition scoring from property photos via Claude (§4.1). Scores 1–5 with structured reasoning.",
+  "description": "ValueProof Vision — AI condition scoring from property photos via Claude (§4.1). Scores 1–5 with structured reasoning.",
   "exports": {
     ".": "./src/index.ts"
   },

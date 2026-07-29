@@ -2,7 +2,7 @@
   "name": "@flip-master/report-builder",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} report builder — renders a Valuation into a branded, self-contained HTML report (web + PDF source). Not an appraisal.",
+  "description": "ValueProof report builder — renders a Valuation into a branded, self-contained HTML report (web + PDF source). Not an appraisal.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

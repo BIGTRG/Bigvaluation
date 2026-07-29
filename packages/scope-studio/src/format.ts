@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Scope-of-Work Studio
+ * ValueProof — Scope-of-Work Studio
  * Text formatting for scope results — plain-text summaries for reports and CLI.
  */
 

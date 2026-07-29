@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "{{BRAND_NAME}} Billing — Stripe connector (§5): pay-per-report checkout, Pro membership subscriptions, metered partner usage, webhook-driven plan sync.",
+  "description": "ValueProof Billing — Stripe connector (§5): pay-per-report checkout, Pro membership subscriptions, metered partner usage, webhook-driven plan sync.",
   "exports": {
     ".": "./src/index.ts"
   },

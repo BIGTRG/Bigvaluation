@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * After-Repair Value per tier (§4.5).
  *
  * ARV(scope) = FinishedSqFt × Band $/sqft, capped at neighborhood ceiling × 1.05.

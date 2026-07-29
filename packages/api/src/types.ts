@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * Transport-agnostic request/response types and the store interfaces the API
  * depends on. The HTTP layer (server.ts) adapts Node's http to `ApiRequest` /
  * `ApiResponse`; everything else works against these, so handlers are unit-

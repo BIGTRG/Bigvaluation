@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * A tiny injectable HTTP client. Real adapters depend on this interface, never
  * on global fetch directly, so they are unit-testable with a canned response
  * and the transport is itself swappable.

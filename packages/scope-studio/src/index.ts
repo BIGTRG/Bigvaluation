@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Scope-of-Work Studio (§4.3)
+ * ValueProof — Scope-of-Work Studio (§4.3)
  * Public API surface.
  */
 

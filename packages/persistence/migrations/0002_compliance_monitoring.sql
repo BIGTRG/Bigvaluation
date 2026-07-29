@@ -1,4 +1,4 @@
--- {{BRAND_NAME}} — 0002: compliance attestations + watch monitoring (§4.7, §5.3)
+-- ValueProof — 0002: compliance attestations + watch monitoring (§4.7, §5.3)
 BEGIN;
 
 -- Investor-only scope lock: recorded attestation per scope of work (§4.7).

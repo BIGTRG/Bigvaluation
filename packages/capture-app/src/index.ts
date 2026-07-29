@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Capture App (§4.1–4.4)
+ * ValueProof — Capture App (§4.1–4.4)
  * Public API surface.
  */
 

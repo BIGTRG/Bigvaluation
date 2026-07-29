@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Orchestration
+ * ValueProof — Orchestration
  * Job persistence + queue interfaces, with in-memory defaults. Swap for Postgres
  * (store) and a real broker (queue) in production — the orchestrator only sees
  * these interfaces (§6 adapter rule).

@@ -1,4 +1,4 @@
-# {{BRAND_NAME}} — production overrides for the fleet.
+# ValueProof — production overrides for the fleet.
 # Usage: docker compose -f docker-compose.yml -f deploy/compose.prod.yml --env-file .env.prod up -d --build
 services:
   db:

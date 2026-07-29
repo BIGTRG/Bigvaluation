@@ -45,7 +45,7 @@ method · certification · disclaimer footer.
 ## Branding
 
 All name/logo/color tokens live in `src/branding.ts` (§12 palette). Swap
-`{{BRAND_NAME}}` → real name, drop the logo into `logoHtml`, and every report
+`ValueProof` → real name, drop the logo into `logoHtml`, and every report
 re-skins. Tier accents: Light `#3F9C6D` / Medium `#2F7FB0` / Luxury `#8A5CC0`.
 
 ## Security

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Server (composition root)
+ * ValueProof — Server (composition root)
  * Wires every package into one running Api, driven by config:
  *   - stores: Postgres when DATABASE_URL is set, else in-memory (dev)
  *   - data:   ATTOM/HouseCanary when keys are present, else the mock provider

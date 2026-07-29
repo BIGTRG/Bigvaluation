@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "{{BRAND_NAME}} Render — dual-layer AI rendering connector (§4.4): renovation layer + furniture staging layer behind a swappable provider adapter.",
+  "description": "ValueProof Render — dual-layer AI rendering connector (§4.4): renovation layer + furniture staging layer behind a swappable provider adapter.",
   "exports": {
     ".": "./src/index.ts"
   },

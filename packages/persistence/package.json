@@ -2,7 +2,7 @@
   "name": "@flip-master/persistence",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} persistence (§8) — Postgres schema + stores behind an injectable SqlClient. The real pg adapter is opt-in.",
+  "description": "ValueProof persistence (§8) — Postgres schema + stores behind an injectable SqlClient. The real pg adapter is opt-in.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

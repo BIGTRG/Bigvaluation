@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Server (composition root)
+ * ValueProof — Server (composition root)
  * Environment configuration. One place that reads process.env and produces a
  * typed config; nothing else in the server touches env directly.
  */
@@ -88,7 +88,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     stripeWebhookSecret: strEnv(env.STRIPE_WEBHOOK_SECRET),
     stripePriceReport: strEnv(env.STRIPE_PRICE_REPORT),
     stripePriceProMonthly: strEnv(env.STRIPE_PRICE_PRO_MONTHLY),
-    billingReturnUrl: strEnv(env.BILLING_RETURN_URL) ?? 'https://{{BRAND_DOMAIN}}/billing',
+    billingReturnUrl: strEnv(env.BILLING_RETURN_URL) ?? 'https://valueproof.net/billing',
 
     renderApiUrl: strEnv(env.RENDER_API_URL),
     renderApiKey: strEnv(env.RENDER_API_KEY),
@@ -99,7 +99,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     watchChangeThreshold: floatEnv(env.WATCH_CHANGE_THRESHOLD, 0.02),
 
     captureBaseUrl: strEnv(env.CAPTURE_BASE_URL) ?? 'https://capture.example.com',
-    appBaseUrl: strEnv(env.APP_BASE_URL) ?? 'https://{{BRAND_DOMAIN}}',
+    appBaseUrl: strEnv(env.APP_BASE_URL) ?? 'https://valueproof.net',
     reportsBaseUrl: strEnv(env.REPORTS_BASE_URL) ?? 'https://reports.example.com',
 
     seedApiKey: strEnv(env.SEED_API_KEY),

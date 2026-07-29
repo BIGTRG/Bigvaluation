@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * HouseCanary adapter (AVM). Build brief §6: "HouseCanary (best fit)".
  *
  * ⚠️ FIELD PATHS ARE ILLUSTRATIVE — verify against HouseCanary's live API before

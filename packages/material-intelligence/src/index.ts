@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Material Intelligence (§4.3 add-on)
+ * ValueProof — Material Intelligence (§4.3 add-on)
  * Public API surface.
  */
 

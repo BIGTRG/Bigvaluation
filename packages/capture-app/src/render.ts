@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Capture App (§4.1–4.4)
+ * ValueProof — Capture App (§4.1–4.4)
  * Server-side HTML renderer for the mobile capture page.
  * Self-contained — no build step, no framework. The HTML uses the device
  * camera via <input type="file" capture="environment"> and submits photos

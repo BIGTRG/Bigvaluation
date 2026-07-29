@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Compliance layer (§4.7, §10)
+ * ValueProof — Compliance layer (§4.7, §10)
  * Investor-only scope lock: every valuation-producing request must carry an
  * explicit business-purpose / non-owner-occupied attestation. The platform is
  * for business-purpose real-estate investment and lending decisions ONLY —

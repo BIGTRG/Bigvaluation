@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Orchestration
+ * ValueProof — Orchestration
  * Job & pipeline types (§7). A Job moves through a DAG of stages
  * (Capture → Understand → Value → Visualize → Deliver); independent stages run
  * in parallel; each stage retries on failure; events fire as it progresses.

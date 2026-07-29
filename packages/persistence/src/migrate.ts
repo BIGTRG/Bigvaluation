@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Persistence
+ * ValueProof — Persistence
  * Migration runner. Reads the SQL migrations (in order) and applies them. Each
  * file is idempotent (IF NOT EXISTS), so re-running is safe. Good enough for
  * MVP; graduate to a versioned migration tool when the schema starts changing.

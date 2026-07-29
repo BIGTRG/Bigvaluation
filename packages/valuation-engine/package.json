@@ -2,7 +2,7 @@
   "name": "@flip-master/valuation-engine",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} automated valuation engine — As-Is + 3-tier ARV, comps, confidence, deal math. Not an appraisal.",
+  "description": "ValueProof automated valuation engine — As-Is + 3-tier ARV, comps, confidence, deal math. Not an appraisal.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

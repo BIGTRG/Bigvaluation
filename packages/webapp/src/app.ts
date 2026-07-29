@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Web app (customer dashboard)
+ * ValueProof — Web app (customer dashboard)
  * A thin, server-rendered shell over the licensing API. Every data operation
  * goes through Api.handle() with the session's own API key, so auth, scopes,
  * attestation enforcement, and metering are identical to direct API use —

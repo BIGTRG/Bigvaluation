@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Persistence
+ * ValueProof — Persistence
  * Postgres-backed implementations of the API layer's stores (§8): API keys,
  * usage metering, watches, capture sessions, scope of work. Each implements the
  * interface the API defines and depends only on SqlClient.

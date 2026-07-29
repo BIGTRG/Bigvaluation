@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Material Intelligence upload parser (§4.3 add-on)
+ * ValueProof — Material Intelligence upload parser (§4.3 add-on)
  *
  * Turns a pasted/uploaded scope of work (plain text, CSV, or the guided
  * builder's form fields) into `MaterialLine[]`. Handles the common shapes:

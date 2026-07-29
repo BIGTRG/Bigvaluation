@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Report Builder
+ * ValueProof — Report Builder
  * Inline stylesheet. Screen + print in one sheet: @page sizing, page-break
  * control, and color-adjust so tier accents survive PDF export. All colors come
  * from the Branding tokens so the report re-skins with the brand.

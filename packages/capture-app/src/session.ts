@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Capture App (§4.1–4.4)
+ * ValueProof — Capture App (§4.1–4.4)
  * Capture session manager — creates tokenized sessions, validates photo
  * submissions, triggers vision scoring, and bridges to the valuation pipeline.
  */

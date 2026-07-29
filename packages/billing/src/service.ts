@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — BillingService (§5 monetization)
+ * ValueProof — BillingService (§5 monetization)
  * Maps the three membership tiers to Stripe products and keeps account plans
  * in sync from webhook events:
  *   - payg:    pay-per-report Checkout (mode=payment)

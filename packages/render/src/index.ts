@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Render (§4.4 dual-layer rendering)
+ * ValueProof — Render (§4.4 dual-layer rendering)
  * Public surface: the swappable provider contract, the two-layer service, and
  * the report adapter.
  */

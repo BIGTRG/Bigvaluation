@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Stripe client (§5, §6 "Billing: Stripe")
+ * ValueProof — Stripe client (§5, §6 "Billing: Stripe")
  * Minimal, dependency-free Stripe REST client: form-encoded requests with an
  * injectable fetch, plus webhook signature verification (Stripe-Signature
  * scheme: HMAC-SHA256 over `${t}.${payload}`). Only the endpoints the platform

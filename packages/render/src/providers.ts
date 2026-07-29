@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Render provider adapters (§4.4, §6 swappable connectors)
+ * ValueProof — Render provider adapters (§4.4, §6 swappable connectors)
  *
  * HttpRenderProvider: a generic JSON-over-HTTP adapter that fits the common
  * shape of render/staging vendors (REimagineHome, SofaBrain, Roomstage): POST

@@ -2,7 +2,7 @@
   "name": "@flip-master/connectors",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} connector layer — Property Data Hub + swappable ATTOM/HouseCanary/MLS adapters feeding the valuation engine.",
+  "description": "ValueProof connector layer — Property Data Hub + swappable ATTOM/HouseCanary/MLS adapters feeding the valuation engine.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Vision (§4.1)
+ * ValueProof — Vision (§4.1)
  * Condition-scoring prompt. Isolated here so it can be tuned independently
  * of the HTTP/parsing logic, and version-controlled for accuracy audits.
  */

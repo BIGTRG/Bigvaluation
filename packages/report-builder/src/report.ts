@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Report Builder
+ * ValueProof — Report Builder
  * Renders a `Valuation` into a self-contained HTML document that serves as BOTH
  * the shareable web report and the PDF source (print CSS + @page). Covers the
  * full Section 3 report contents. No external assets, no scripts.

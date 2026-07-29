@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Web app: Material Intelligence pages (§4.3 add-on)
+ * ValueProof — Web app: Material Intelligence pages (§4.3 add-on)
  * Guided scope-of-work builder, analyst read-out, send-a-link management,
  * and the public borrower form. Pure render functions.
  */

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Public API surface. Consumers (report builder, orchestration API, licensing
  * API §9) import from here only.
  */

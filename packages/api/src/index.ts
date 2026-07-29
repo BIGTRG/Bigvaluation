@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * Public API surface. The HTTP service that makes the valuation platform
  * sellable and licensable: submit valuations, fetch reports, register webhooks.
  */

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Vision (§4.1)
+ * ValueProof — Vision (§4.1)
  * Claude-based condition scorer. Sends property photos to Claude's vision API
  * and returns a structured ConditionAssessment. HTTP is injected for testability.
  *

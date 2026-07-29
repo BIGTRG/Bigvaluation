@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * Demo wiring: builds a fully-working API backed by in-memory stores and a
  * mock data hub, with one seeded API key. Used by the example server and tests.
  * In production, replace the in-memory stores and the MockProvider with Postgres

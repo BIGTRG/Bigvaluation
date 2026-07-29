@@ -2,7 +2,7 @@
   "name": "@flip-master/orchestration",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} orchestration — async 5-stage job pipeline (Capture→Understand→Value→Visualize→Deliver) with retries and webhook events.",
+  "description": "ValueProof orchestration — async 5-stage job pipeline (Capture→Understand→Value→Visualize→Deliver) with retries and webhook events.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

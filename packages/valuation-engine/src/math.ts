@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Dependency-free statistical primitives. Every value in a report ultimately
  * traces back through these, so they are kept small and individually tested.
  */

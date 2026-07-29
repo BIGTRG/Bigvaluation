@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Confidence as a Forecast Standard Deviation % (§4.5):
  *   FSD = f(comp count, $/sqft dispersion, recency, radius)
  *

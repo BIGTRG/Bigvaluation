@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Billing (§5)
+ * ValueProof — Billing (§5)
  * Stripe connector + plan sync. Public surface.
  */
 

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Persistence
+ * ValueProof — Persistence
  * The database seam. Stores depend on this tiny interface, never on `pg`
  * directly, so they are unit-testable with a fake client and the driver stays
  * swappable (pg, postgres.js, a pooled proxy — all behind SqlClient).

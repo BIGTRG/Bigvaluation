@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Report Builder
+ * ValueProof — Report Builder
  * Presentation helpers. Money is rounded for display only; the underlying
  * Valuation keeps full precision for the audit trail.
  */

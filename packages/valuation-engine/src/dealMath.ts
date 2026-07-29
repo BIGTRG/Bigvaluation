@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Deal math (§3, §4.5).
  *
  *   projectedProfit = ARV − purchase − rehab − holding − closing

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Server (composition root)
+ * ValueProof — Server (composition root)
  * Parse a full API key (`fmk_<keyId>.<secret>`) into its parts for seeding.
  */
 

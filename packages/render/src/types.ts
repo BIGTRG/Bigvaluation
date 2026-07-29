@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Render connector types (§4.4 dual-layer rendering)
+ * ValueProof — Render connector types (§4.4 dual-layer rendering)
  * Layer 1 (renovation): apply the scope's materials to the real room, geometry
  * preserved. Layer 2 (staging): add furniture/décor on top. Providers (Rendr /
  * REimagineHome / SofaBrain / Roomstage) sit behind RenderProvider so any

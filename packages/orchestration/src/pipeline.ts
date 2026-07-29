@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Orchestration
+ * ValueProof — Orchestration
  * The default 5-stage pipeline, wiring the real packages as stage handlers:
  *
  *   capture   →  understand  →   value    →  visualize  →  deliver

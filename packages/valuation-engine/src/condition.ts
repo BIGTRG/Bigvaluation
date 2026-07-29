@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * ConditionFactor: maps a Vision condition score to an As-Is multiplier (§4.5).
  * Piecewise-linear interpolation over the market's condition anchors, clamped
  * to the endpoint factors outside the anchor range.

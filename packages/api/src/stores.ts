@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * In-memory store implementations for local dev and tests. Swap each for a
  * Postgres-backed store in production (§8 data model) — the API only sees the
  * interfaces in types.ts.

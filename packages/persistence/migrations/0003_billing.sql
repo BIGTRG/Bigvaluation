@@ -1,4 +1,4 @@
--- {{BRAND_NAME}} — 0003: Stripe billing state (§5)
+-- ValueProof — 0003: Stripe billing state (§5)
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS billing_accounts (

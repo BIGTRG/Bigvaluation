@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Orchestration
+ * ValueProof — Orchestration
  * Event bus + webhook dispatch (§9 webhooks). Subscribers receive every job
  * event; the WebhookDispatcher forwards a subset to registered HTTP endpoints.
  * A failing subscriber never breaks the pipeline or the other subscribers.

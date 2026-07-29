@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Renovated $/sqft bands (§4.5).
  *
  * "Renovated $/sqft bands built from renovated comps ONLY, split by percentile:

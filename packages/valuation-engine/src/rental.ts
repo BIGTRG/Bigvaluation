@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Rental / BRRRR value via the income approach (§3, §4.5).
  *
  *   NOI = annualRent × (1 − expenseRatio)

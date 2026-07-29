@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Persistence
+ * ValueProof — Persistence
  * Public API. Postgres-backed stores implementing the orchestration + API store
  * interfaces (§8 data model). The real `pg` adapter lives in ./pgClient.ts and
  * is intentionally NOT re-exported here, so importing this package never

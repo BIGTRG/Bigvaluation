@@ -1,7 +1,7 @@
-# {{BRAND_NAME}} — Valuation Suite
+# ValueProof — Valuation Suite
 
 > Working title: **Flip Master Valuation Suite**. Name and logo pending — the
-> codebase uses `{{BRAND_NAME}}` / `{{LOGO}}` / `{{BRAND_DOMAIN}}` tokens so the
+> codebase uses `ValueProof` / `{{LOGO}}` / `valueproof.net` tokens so the
 > brand drops in with a single find-and-replace.
 
 An AI-driven property valuation platform that produces a sellable report giving

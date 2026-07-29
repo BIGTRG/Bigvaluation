@@ -1,4 +1,4 @@
-# {{BRAND_NAME}} Valuation Suite — local / single-box stack (§6: Hetzner target).
+# ValueProof Valuation Suite — local / single-box stack (§6: Hetzner target).
 # Postgres (§8 data), MinIO (S3-compatible object storage), and the API service.
 #
 #   docker compose up --build

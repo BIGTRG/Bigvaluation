@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Report Builder
+ * ValueProof — Report Builder
  * Public API. Consumes a `Valuation` from @flip-master/valuation-engine and
  * returns a self-contained HTML report (web + PDF source).
  */

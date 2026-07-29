@@ -2,7 +2,7 @@
   "name": "flip-master",
   "version": "0.1.0",
   "private": true,
-  "description": "{{BRAND_NAME}} Valuation Suite — monorepo. Automated valuations, not appraisals.",
+  "description": "ValueProof Valuation Suite — monorepo. Automated valuations, not appraisals.",
   "type": "module",
   "engines": {
     "node": ">=23"

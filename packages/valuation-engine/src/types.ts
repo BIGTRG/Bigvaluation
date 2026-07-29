@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Valuation Engine
+ * ValueProof — Valuation Engine
  * Domain types. This is the shared vocabulary for the whole engine.
  *
  * Positioning rule (see build brief §10): this produces an AUTOMATED VALUATION,

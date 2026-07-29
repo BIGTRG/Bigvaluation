@@ -15,7 +15,7 @@ const server = createHttpServer(api);
 const port = Number(process.env.PORT ?? 8787);
 
 server.listen(port, () => {
-  console.log(`{{BRAND_NAME}} API listening on http://localhost:${port}`);
+  console.log(`ValueProof API listening on http://localhost:${port}`);
   console.log(`Demo key: ${apiKey}`);
   console.log('Try:  curl -s localhost:' + port + '/health');
 });

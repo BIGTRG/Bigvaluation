@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Web app sessions
+ * ValueProof — Web app sessions
  * The web app is a thin shell over the licensing API: the user signs in with
  * their API key, and every action the app takes goes through the same API
  * auth/scope/metering path. The key is carried in an HMAC-signed, HttpOnly

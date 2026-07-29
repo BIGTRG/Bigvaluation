@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Vision (§4.1)
+ * ValueProof — Vision (§4.1)
  * Unit tests for ConditionScorer. Uses injected HTTP to avoid real API calls.
  */
 

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Web App
+ * ValueProof — Web App
  * Customer dashboard over the licensing API. Public surface.
  */
 

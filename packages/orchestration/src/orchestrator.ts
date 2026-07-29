@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Orchestration
+ * ValueProof — Orchestration
  * The pipeline runner (§7). Executes a Job through its stage DAG:
  *   - a stage runs once all its dependencies have succeeded (or been skipped)
  *   - independent ready stages run in parallel

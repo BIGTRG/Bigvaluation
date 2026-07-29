@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Scope-of-Work Studio
+ * ValueProof — Scope-of-Work Studio
  * Rehab work catalog + market config.
  *
  * Every finish item belongs to a category (counters, flooring, paint, etc.)

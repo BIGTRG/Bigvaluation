@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Connectors
+ * ValueProof — Connectors
  * Public API. The Property Data Hub + provider adapters that feed the valuation
  * engine. Every external vendor lives behind these interfaces (§6).
  */

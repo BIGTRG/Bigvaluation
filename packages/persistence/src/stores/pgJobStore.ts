@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Persistence
+ * ValueProof — Persistence
  * Postgres-backed JobStore (implements the orchestration JobStore interface).
  * The whole Job is persisted with JSONB columns for input/stages/context, plus
  * an extracted account_id for API ownership scoping.

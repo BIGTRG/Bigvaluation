@@ -1,4 +1,4 @@
--- {{BRAND_NAME}} — Persistence (§8 data model)
+-- ValueProof — Persistence (§8 data model)
 -- Initial schema. Timestamps are stored as BIGINT epoch-milliseconds to match
 -- the application's numeric clock (and keep runs reproducible with an injected
 -- clock). JSONB holds the flexible nested structures the engine produces.

@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Licensing API (§9)
+ * ValueProof — Licensing API (§9)
  * API-key authentication. Keys look like `fmk_<keyId>.<secret>`; we store only
  * a hash of the secret, so a leaked database never exposes usable keys. The
  * client sends the full key in `Authorization: Bearer …` or `x-api-key`.

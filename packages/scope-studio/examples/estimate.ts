@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Scope-of-Work Studio example.
+ * ValueProof — Scope-of-Work Studio example.
  * Run: node packages/scope-studio/examples/estimate.ts
  *
  * Demonstrates building scopes for a distressed 1,400 sqft property and

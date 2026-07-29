@@ -1,5 +1,5 @@
 /**
- * {{BRAND_NAME}} — Orchestration
+ * ValueProof — Orchestration
  * Public API. The async job pipeline (§7) that runs the five stages, retries,
  * and emits webhook events (§9), composing the engine, connectors, and report
  * builder.
