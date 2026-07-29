@@ -55,7 +55,11 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
 
   const ct = response.headers?.['content-type'] ?? 'application/json; charset=utf-8';
   const payload =
-    typeof response.body === 'string' ? response.body : JSON.stringify(response.body ?? null);
+    response.body instanceof Uint8Array
+      ? response.body
+      : typeof response.body === 'string'
+        ? response.body
+        : JSON.stringify(response.body ?? null);
   res.writeHead(response.status, { ...response.headers, 'content-type': ct });
   res.end(payload);
 }

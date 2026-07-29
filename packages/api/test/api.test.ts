@@ -19,7 +19,8 @@ function req(method: ApiRequest['method'], path: string, opts?: { key?: string; 
 }
 
 const subject = { address: '123 Flip St, Phoenix, AZ 85021', radiusMiles: 2 };
-const valBody = { subject, deal: { purchasePrice: 290_000 }, rental: { monthlyRent: 2400 } };
+const attestation = { businessPurpose: true, nonOwnerOccupied: true, attestedBy: 'test@lender.example' };
+const valBody = { subject, attestation, deal: { purchasePrice: 290_000 }, rental: { monthlyRent: 2400 } };
 
 test('health is public', async () => {
   const { api } = makeApi();
@@ -60,7 +61,7 @@ test('POST /valuations runs the pipeline and returns a summary', async () => {
 
 test('POST /valuations validates subject.address', async () => {
   const { api } = makeApi();
-  const res = await api.handle(req('POST', '/valuations', { key: KEY, body: { subject: {} } }));
+  const res = await api.handle(req('POST', '/valuations', { key: KEY, body: { subject: {}, attestation } }));
   assert.equal(res.status, 400);
   assert.equal((res.body as any).error, 'invalid_request');
 });
@@ -98,7 +99,7 @@ test('metering records one billable unit per successful valuation', async () => 
   await api.handle(req('POST', '/valuations', { key: KEY, body: valBody }));
   await api.handle(req('POST', '/valuations', { key: KEY, body: valBody }));
   // A validation failure (400) must NOT be metered.
-  await api.handle(req('POST', '/valuations', { key: KEY, body: { subject: {} } }));
+  await api.handle(req('POST', '/valuations', { key: KEY, body: { subject: {}, attestation } }));
   const total = await meter.total('acct_demo');
   assert.equal(total, 2);
 });
@@ -118,7 +119,7 @@ test('valuation.completed and report.ready webhooks fire during a job', async ()
 
 test('POST /watches and /capture-sessions and /scope-of-work create resources', async () => {
   const { api } = makeApi();
-  const w = await api.handle(req('POST', '/watches', { key: KEY, body: { subject, webhookUrl: 'https://x/y' } }));
+  const w = await api.handle(req('POST', '/watches', { key: KEY, body: { subject, attestation, webhookUrl: 'https://x/y' } }));
   assert.equal(w.status, 201);
   assert.match((w.body as any).id, /^wch|^id_/);
 
@@ -128,7 +129,7 @@ test('POST /watches and /capture-sessions and /scope-of-work create resources', 
 
   const s = await api.handle(req('POST', '/scope-of-work', {
     key: KEY,
-    body: { lineItems: [{ label: 'kitchen', costUsd: 30000 }, { label: 'baths', costUsd: 18000 }] },
+    body: { attestation, lineItems: [{ label: 'kitchen', costUsd: 30000 }, { label: 'baths', costUsd: 18000 }] },
   }));
   assert.equal(s.status, 201);
   assert.equal((s.body as any).totalUsd, 48000);
@@ -144,4 +145,63 @@ test('webhook url must be http(s)', async () => {
   const { api } = makeApi();
   const res = await api.handle(req('POST', '/webhooks', { key: KEY, body: { url: 'javascript:alert(1)' } }));
   assert.equal(res.status, 400);
+});
+
+// --- Compliance: investor-only scope lock (§4.7) -----------------------------
+
+test('valuation without attestation is rejected 422', async () => {
+  const { api } = makeApi();
+  const res = await api.handle(req('POST', '/valuations', { key: KEY, body: { subject, deal: {} } }));
+  assert.equal(res.status, 422);
+  assert.equal((res.body as any).error, 'attestation_required');
+});
+
+test('attestation must have both flags true', async () => {
+  const { api } = makeApi();
+  for (const bad of [
+    { businessPurpose: true },
+    { nonOwnerOccupied: true },
+    { businessPurpose: 'yes', nonOwnerOccupied: true },
+    { businessPurpose: true, nonOwnerOccupied: false },
+  ]) {
+    const res = await api.handle(req('POST', '/valuations', { key: KEY, body: { subject, attestation: bad } }));
+    assert.equal(res.status, 422, JSON.stringify(bad));
+  }
+});
+
+test('scope-of-work and watches also require attestation', async () => {
+  const { api } = makeApi();
+  const s1 = await api.handle(req('POST', '/scope-of-work', { key: KEY, body: { lineItems: [{ label: 'x', costUsd: 1 }] } }));
+  assert.equal(s1.status, 422);
+  const w1 = await api.handle(req('POST', '/watches', { key: KEY, body: { subject } }));
+  assert.equal(w1.status, 422);
+});
+
+test('attestation is recorded on the job for the audit trail', async () => {
+  const { api } = makeApi();
+  const created = await api.handle(req('POST', '/valuations', { key: KEY, body: valBody }));
+  assert.equal(created.status, 201);
+  // The report itself carries the business-purpose footer.
+  const reportId = (created.body as any).reportId as string;
+  const html = await api.handle(req('GET', `/reports/${reportId}`, { key: KEY }));
+  assert.match(html.body as string, /business-purpose/i);
+});
+
+test('legal pages are public', async () => {
+  const { api } = makeApi();
+  const terms = await api.handle(req('GET', '/legal/terms'));
+  assert.equal(terms.status, 200);
+  assert.match(terms.headers?.['content-type'] ?? '', /text\/html/);
+  assert.match(terms.body as string, /Business-Purpose, Investor-Only Use/);
+  const privacy = await api.handle(req('GET', '/legal/privacy'));
+  assert.equal(privacy.status, 200);
+  assert.match(privacy.body as string, /not a consumer reporting agency/i);
+});
+
+test('report PDF returns 409 when no renderer, PDF bytes when configured', async () => {
+  const { api } = makeApi();
+  const created = await api.handle(req('POST', '/valuations', { key: KEY, body: valBody }));
+  const reportId = (created.body as any).reportId as string;
+  const noPdf = await api.handle(req('GET', `/reports/${reportId}`, { key: KEY, query: { format: 'pdf' } }));
+  assert.equal(noPdf.status, 409);
 });

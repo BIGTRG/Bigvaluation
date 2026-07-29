@@ -21,6 +21,14 @@ export interface ServerConfig {
   /** Claude model for vision scoring. Default: claude-sonnet-4-20250514. */
   visionModel?: string;
 
+  /** Gotenberg base URL for PDF reports (§3). Unset = PDF disabled. */
+  gotenbergUrl?: string;
+
+  /** Watch monitoring sweep interval, ms (§5.3). 0 = disabled. */
+  watchIntervalMs: number;
+  /** Relative value move that fires watch.changed. Default 0.02 (2%). */
+  watchChangeThreshold: number;
+
   /** Base URLs used in generated links. */
   captureBaseUrl: string;
   reportsBaseUrl: string;
@@ -50,6 +58,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     anthropicApiKey: strEnv(env.ANTHROPIC_API_KEY),
     visionModel: strEnv(env.VISION_MODEL),
 
+    gotenbergUrl: strEnv(env.GOTENBERG_URL),
+
+    watchIntervalMs: intEnv(env.WATCH_INTERVAL_MS, 0),
+    watchChangeThreshold: floatEnv(env.WATCH_CHANGE_THRESHOLD, 0.02),
+
     captureBaseUrl: strEnv(env.CAPTURE_BASE_URL) ?? 'https://capture.example.com',
     reportsBaseUrl: strEnv(env.REPORTS_BASE_URL) ?? 'https://reports.example.com',
 
@@ -71,6 +84,10 @@ function strEnv(v: string | undefined): string | undefined {
 function intEnv(v: string | undefined, dflt: number): number {
   const n = Number(v);
   return Number.isFinite(n) && v !== undefined && v !== '' ? Math.trunc(n) : dflt;
+}
+function floatEnv(v: string | undefined, dflt: number): number {
+  const n = Number(v);
+  return Number.isFinite(n) && v !== undefined && v !== '' ? n : dflt;
 }
 function boolEnv(v: string | undefined, dflt: boolean): boolean {
   if (v === undefined) return dflt;

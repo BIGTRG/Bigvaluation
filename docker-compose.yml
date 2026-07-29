@@ -36,11 +36,17 @@ services:
       - "9000:9000"   # S3 API
       - "9001:9001"   # console
 
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    command: ["gotenberg", "--api-timeout=45s", "--chromium-disable-javascript=false"]
+
   api:
     build: .
     depends_on:
       db:
         condition: service_healthy
+      gotenberg:
+        condition: service_started
     environment:
       PORT: "8787"
       NODE_ENV: production
@@ -49,6 +55,9 @@ services:
       SEED_API_KEY: fmk_demo.secret123
       REPORTS_BASE_URL: http://localhost:8787/reports
       CAPTURE_BASE_URL: http://localhost:8787/capture
+      GOTENBERG_URL: http://gotenberg:3000
+      WATCH_INTERVAL_MS: "86400000"   # daily monitoring sweep (§5.3)
+      WATCH_CHANGE_THRESHOLD: "0.02"
       # ATTOM_API_KEY / HOUSECANARY_API_KEY / HOUSECANARY_API_SECRET:
       #   set these to run on live data instead of the mock provider.
     ports:

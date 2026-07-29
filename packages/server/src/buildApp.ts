@@ -45,6 +45,9 @@ import type { ServerConfig } from './config.ts';
 import { hasRealProviders } from './config.ts';
 import { parseSeedKey } from './seed.ts';
 import { ConditionScorer } from '../../vision/src/index.ts';
+import { WatchMonitor } from '../../api/src/index.ts';
+import type { Watch, PdfRenderer } from '../../api/src/index.ts';
+import { GotenbergPdfRenderer } from './pdf.ts';
 
 export interface StoresBundle {
   jobStore: JobStore;
@@ -61,7 +64,9 @@ export interface BuiltApp {
   events: EventBus;
   webhooks: WebhookDispatcher;
   stores: StoresBundle;
-  mode: { storage: 'postgres' | 'memory'; data: 'live' | 'mock' };
+  /** Live valuation monitoring (§5.3); main.ts runs it on WATCH_INTERVAL_MS. */
+  monitor: WatchMonitor;
+  mode: { storage: 'postgres' | 'memory'; data: 'live' | 'mock'; pdf: 'gotenberg' | 'off' };
   dispose: () => Promise<void>;
 }
 
@@ -94,6 +99,11 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
 
   const orchestrator = new Orchestrator({ store: stores.jobStore, events, stages });
 
+  // §3 branded PDF — optional Gotenberg connector.
+  const pdf: PdfRenderer | undefined = cfg.gotenbergUrl
+    ? new GotenbergPdfRenderer({ url: cfg.gotenbergUrl })
+    : undefined;
+
   const deps: AppDeps = {
     orchestrator,
     jobStore: stores.jobStore,
@@ -103,8 +113,29 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     captures: stores.captures,
     scopes: stores.scopes,
     webhooks,
+    pdf,
     captureBaseUrl: cfg.captureBaseUrl,
   };
+
+  // §5.3 live monitoring — re-values watches and fires watch.changed.
+  const monitor = new WatchMonitor({
+    watches: stores.watches,
+    revalue: async (watch: Watch) => {
+      const job = await orchestrator.execute({
+        subject: watch.subject,
+        attestation: watch.attestation,
+        accountId: watch.accountId,
+      });
+      if (job.status === 'failed') throw new Error(job.error ?? 'revaluation failed');
+      const v = job.context.valuation as { asIs: number; arv: Record<string, number> };
+      return { valuationId: job.id, asIs: v.asIs, arv: v.arv.medium };
+    },
+    notify: async (url, event) => {
+      await fetchHttpPost(url, event as unknown as Record<string, unknown>);
+    },
+    changeThreshold: cfg.watchChangeThreshold,
+    log: (msg) => console.warn(`[watch-monitor] ${msg}`),
+  });
 
   return {
     api: new Api(deps),
@@ -112,7 +143,8 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     events,
     webhooks,
     stores,
-    mode: { storage, data },
+    monitor,
+    mode: { storage, data, pdf: pdf ? 'gotenberg' : 'off' },
     dispose,
   };
 }

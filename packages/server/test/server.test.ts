@@ -47,6 +47,7 @@ test('the composed server serves a real valuation with the seeded key', async ()
 
   const res = await app.api.handle(
     req('POST', '/valuations', 'fmk_demo.secret123', {
+      attestation: { businessPurpose: true, nonOwnerOccupied: true },
       subject: { address: '123 Flip St, Phoenix, AZ 85021', radiusMiles: 2 },
       conditionScore: 2,
       deal: { purchasePrice: 290_000 },
@@ -70,7 +71,7 @@ test('the composed server serves a real valuation with the seeded key', async ()
 test('an unseeded server rejects all keys (401)', async () => {
   const cfg = loadConfig({} as never); // no SEED_API_KEY
   const app = await buildApp(cfg);
-  const res = await app.api.handle(req('POST', '/valuations', 'fmk_demo.secret123', { subject: { address: 'x' } }));
+  const res = await app.api.handle(req('POST', '/valuations', 'fmk_demo.secret123', { subject: { address: 'x' }, attestation: { businessPurpose: true, nonOwnerOccupied: true } }));
   assert.equal(res.status, 401);
   await app.dispose();
 });

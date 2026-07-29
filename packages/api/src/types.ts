@@ -75,6 +75,15 @@ export interface Watch {
   accountId: string;
   subject: Record<string, unknown>;
   lastValuationId?: string;
+  /** Last observed values — the monitor's comparison baseline (§5.3). */
+  lastAsIs?: number;
+  lastArv?: number;
+  lastCheckedAt?: number;
+  /** Largest relative move seen at the last check (0.031 = 3.1%). */
+  changeDelta?: number;
+  /** Recorded business-purpose attestation (§4.7); reused by monitor re-checks. */
+  attestation?: Record<string, unknown>;
+  notifiedAt?: number;
   webhookUrl?: string;
   createdAt: number;
 }
@@ -83,6 +92,15 @@ export interface WatchStore {
   save(watch: Watch): Promise<void>;
   get(id: string): Promise<Watch | null>;
   listByAccount(accountId: string): Promise<Watch[]>;
+  /** Every watch, for the monitoring sweep (§5.3). */
+  listAll(): Promise<Watch[]>;
+}
+
+// --- PDF rendering (§3 "branded PDF") ---------------------------------------
+
+/** Renders self-contained report HTML into a PDF. Swappable connector (§6). */
+export interface PdfRenderer {
+  render(html: string, opts?: { filename?: string }): Promise<Uint8Array>;
 }
 
 export interface CaptureSession {
@@ -105,6 +123,8 @@ export interface ScopeOfWork {
   accountId: string;
   subject?: Record<string, unknown>;
   lineItems: { label: string; category?: string; costUsd: number }[];
+  /** Recorded business-purpose attestation (§4.7 audit trail). */
+  attestation?: Record<string, unknown>;
   createdAt: number;
 }
 

@@ -12,7 +12,10 @@ import type {
   WatchStore,
   CaptureSessionStore,
   ScopeStore,
+  PdfRenderer,
 } from './types.ts';
+import { requireAttestation, isAttestationError } from './compliance.ts';
+import { TERMS_HTML, PRIVACY_HTML } from './legal.ts';
 import { Router } from './router.ts';
 import { Authenticator, hasScope } from './auth.ts';
 import type { Orchestrator, JobStore, WebhookDispatcher, Job } from '../../orchestration/src/index.ts';
@@ -27,6 +30,8 @@ export interface AppDeps {
   captures: CaptureSessionStore;
   scopes: ScopeStore;
   webhooks?: WebhookDispatcher;
+  /** Optional PDF connector (§3 "branded PDF"); GET /reports/:id?format=pdf. */
+  pdf?: PdfRenderer;
   clock?: { now: () => number };
   idFactory?: () => string;
   /** Base URL for the tokenized mobile capture link (§4.1). */
@@ -63,6 +68,8 @@ export class Api {
   private registerRoutes(): void {
     const r = this.router;
     r.add({ id: 'health', method: 'GET', pattern: '/health', public: true, handler: this.health });
+    r.add({ id: 'legal.terms', method: 'GET', pattern: '/legal/terms', public: true, handler: async () => html(TERMS_HTML) });
+    r.add({ id: 'legal.privacy', method: 'GET', pattern: '/legal/privacy', public: true, handler: async () => html(PRIVACY_HTML) });
     r.add({ id: 'valuations.create', method: 'POST', pattern: '/valuations', scope: 'valuations:write', billable: true, handler: this.createValuation });
     r.add({ id: 'valuations.get', method: 'GET', pattern: '/valuations/:id', scope: 'valuations:read', handler: this.getValuation });
     r.add({ id: 'reports.get', method: 'GET', pattern: '/reports/:id', scope: 'reports:read', handler: this.getReport });
@@ -114,7 +121,12 @@ export class Api {
     if (!subject || typeof subject.address !== 'string' || !subject.address.trim()) {
       return json(400, { error: 'invalid_request', detail: 'subject.address is required' });
     }
+    // Investor-only scope lock (§4.7): business-purpose, non-owner-occupied,
+    // attested per request and recorded on the job for the audit trail.
+    const attestation = requireAttestation(body, ctx.now);
+    if (isAttestationError(attestation)) return json(422, attestation);
     const job = await this.deps.orchestrator.createJob({
+      attestation,
       subject,
       conditionScore: numberOrUndef(body.conditionScore),
       deal: asObject(body.deal),
@@ -143,9 +155,23 @@ export class Api {
     if (typeof html !== 'string') {
       return json(409, { error: 'not_ready', detail: `report status: ${job.status}` });
     }
-    // Content negotiation: default HTML; JSON envelope when asked.
+    // Content negotiation: default HTML; JSON envelope or PDF when asked.
     if (ctx.req.query.format === 'json') {
       return json(200, { reportId: `FM-${jobId}`, reportUrl: job.context.reportUrl, html });
+    }
+    if (ctx.req.query.format === 'pdf') {
+      if (!this.deps.pdf) {
+        return json(409, { error: 'pdf_unavailable', detail: 'No PDF renderer is configured on this deployment.' });
+      }
+      const pdf = await this.deps.pdf.render(html, { filename: `FM-${jobId}.pdf` });
+      return {
+        status: 200,
+        body: pdf,
+        headers: {
+          'content-type': 'application/pdf',
+          'content-disposition': `inline; filename="FM-${jobId}.pdf"`,
+        },
+      };
     }
     return { status: 200, body: html, headers: { 'content-type': 'text/html; charset=utf-8' } };
   };
@@ -156,10 +182,15 @@ export class Api {
     if (!subject || typeof subject.address !== 'string') {
       return json(400, { error: 'invalid_request', detail: 'subject.address is required' });
     }
+    // Watches trigger automatic re-valuations, so the investor-only lock
+    // applies here too; the attestation is stored and reused on every re-check.
+    const attestation = requireAttestation(body, ctx.now);
+    if (isAttestationError(attestation)) return json(422, attestation);
     const watch = {
       id: ctx.newId('wch'),
       accountId: ctx.auth.accountId,
       subject,
+      attestation: attestation as unknown as Record<string, unknown>,
       webhookUrl: typeof body.webhookUrl === 'string' ? body.webhookUrl : undefined,
       createdAt: ctx.now,
     };
@@ -187,6 +218,9 @@ export class Api {
 
   private createScope = async (ctx: HandlerCtx): Promise<ApiResponse> => {
     const body = asObject(ctx.req.body);
+    // A scope returns a true-scope ARV, so the same investor-only lock applies.
+    const attestation = requireAttestation(body, ctx.now);
+    if (isAttestationError(attestation)) return json(422, attestation);
     const rawItems = Array.isArray(body.lineItems) ? body.lineItems : null;
 
     // If no lineItems provided, generate a scope from subject + tier via the Studio
@@ -214,6 +248,7 @@ export class Api {
           accountId: ctx.auth.accountId,
           subject: subjectRaw,
           lineItems: result.lineItems,
+          attestation: attestation as unknown as Record<string, unknown>,
           createdAt: ctx.now,
         };
         await this.deps.scopes.save(scope);
@@ -226,6 +261,7 @@ export class Api {
           accountId: ctx.auth.accountId,
           subject: subjectRaw,
           lineItems: results.medium.lineItems,
+          attestation: attestation as unknown as Record<string, unknown>,
           createdAt: ctx.now,
         };
         await this.deps.scopes.save(scope);
@@ -250,6 +286,7 @@ export class Api {
       accountId: ctx.auth.accountId,
       subject: asObject(body.subject),
       lineItems,
+      attestation: attestation as unknown as Record<string, unknown>,
       createdAt: ctx.now,
     };
     await this.deps.scopes.save(scope);
@@ -274,6 +311,10 @@ export class Api {
 
 function json(status: number, body: unknown, headers?: Record<string, string>): ApiResponse {
   return { status, body, headers };
+}
+
+function html(body: string): ApiResponse {
+  return { status: 200, body, headers: { 'content-type': 'text/html; charset=utf-8' } };
 }
 
 function asObject(v: unknown): Record<string, unknown> | undefined {

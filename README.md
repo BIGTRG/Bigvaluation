@@ -12,6 +12,12 @@ licensable as an API.
 
 **Automated valuations are estimates, not licensed appraisals.**
 
+**Investor-only.** The platform serves business-purpose, non-owner-occupied real
+estate decisions exclusively. Every valuation, scope, and watch request must
+carry an explicit `attestation: { businessPurpose: true, nonOwnerOccupied: true }`,
+which is recorded for the audit trail. Public `GET /legal/terms` and
+`GET /legal/privacy` ship with every deployment.
+
 ## Monorepo layout
 
 ```
@@ -95,8 +101,15 @@ Claude (primary AI) · ATTOM / HouseCanary / MLS (data & AVM) · Regrid + Shovel
 | Licensing API (§9) | ✅ Built + tested (auth, scopes, metering, webhooks; framework-free) |
 | Postgres persistence (§8) | ✅ Built + tested (schema + stores behind SqlClient; pg adapter opt-in) |
 | Composition root + Docker deploy (§6) | ✅ Built + tested (server wires all packages; Dockerfile + compose) |
-| Capture app · Scope Studio · Rendering (§4.1–4.4) | ⏳ Planned (injection points ready) |
-| Live data wiring (verify ATTOM/HouseCanary fields) | ⏳ Needs API keys |
+| Capture app · Vision scoring · Scope Studio (§4.1, §4.3) | ✅ Built + tested |
+| Compliance layer (§4.7): investor-only attestation gate, legal pages, report disclaimers | ✅ Built + tested |
+| Live valuation monitoring (§5.3): watch sweeps + `watch.changed` webhooks | ✅ Built + tested |
+| PDF reports (§3): Gotenberg connector, `GET /reports/:id?format=pdf` | ✅ Built + tested (compose ships Gotenberg) |
+| Rendering + staging connector (§4.4) | ⏳ Planned (injection point ready) |
+| Stripe billing + membership tiers (§5) | ⏳ Planned (metering already records usage) |
+| Customer web app (order flow, dashboard) | ⏳ Planned |
+| Smart Walkthrough 2.0 (§4.2: Regrid + Shovels) | ⏳ Planned |
+| Live data wiring (verify ATTOM/HouseCanary fields) | ⏳ Needs API keys / contracts |
 
 ---
 

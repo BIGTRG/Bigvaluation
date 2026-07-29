@@ -313,6 +313,7 @@ function footer(b: Branding, meta: ReportMeta): string {
   return `
   <footer class="disclaimer">
     <p><strong>${esc(NOT_AN_APPRAISAL)}</strong> Values are model-based estimates produced by ${esc(b.brandName)} from comparable sales, an automated valuation model, and an AI condition assessment. They are not a certified appraisal, a guarantee of value, or a loan commitment.</p>
+    <p><strong>Business-purpose use only.</strong> Prepared for business-purpose real estate investment and lending use; not for consumer mortgage lending or any credit decision on a consumer&rsquo;s principal dwelling.</p>
     <p>${esc(b.brandName)} · ${esc(b.brandDomain)} · Report ${esc(meta.reportId)}</p>
   </footer>`;
 }

@@ -58,6 +58,9 @@ export class InMemoryWatchStore implements WatchStore {
   async listByAccount(accountId: string): Promise<Watch[]> {
     return [...this.byId.values()].filter((w) => w.accountId === accountId).map((w) => structuredClone(w));
   }
+  async listAll(): Promise<Watch[]> {
+    return [...this.byId.values()].map((w) => structuredClone(w));
+  }
 }
 
 export class InMemoryCaptureSessionStore implements CaptureSessionStore {

@@ -76,14 +76,18 @@ export class PgMeterStore implements MeterStore {
 // --- Watches ---------------------------------------------------------------
 
 const WATCH_UPSERT = `
-INSERT INTO watches (id, account_id, subject, last_valuation_id, change_delta, webhook_url, notified_at, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO watches (id, account_id, subject, last_valuation_id, change_delta, webhook_url, notified_at, created_at, last_as_is, last_arv, last_checked_at, attestation)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 ON CONFLICT (id) DO UPDATE SET
   subject = EXCLUDED.subject,
   last_valuation_id = EXCLUDED.last_valuation_id,
   change_delta = EXCLUDED.change_delta,
   webhook_url = EXCLUDED.webhook_url,
-  notified_at = EXCLUDED.notified_at`;
+  notified_at = EXCLUDED.notified_at,
+  last_as_is = EXCLUDED.last_as_is,
+  last_arv = EXCLUDED.last_arv,
+  last_checked_at = EXCLUDED.last_checked_at,
+  attestation = EXCLUDED.attestation`;
 
 export class PgWatchStore implements WatchStore {
   private readonly db: SqlClient;
@@ -96,10 +100,14 @@ export class PgWatchStore implements WatchStore {
       w.accountId,
       JSON.stringify(w.subject),
       w.lastValuationId ?? null,
-      null,
+      w.changeDelta ?? null,
       w.webhookUrl ?? null,
-      null,
+      w.notifiedAt ?? null,
       w.createdAt,
+      w.lastAsIs ?? null,
+      w.lastArv ?? null,
+      w.lastCheckedAt ?? null,
+      w.attestation ? JSON.stringify(w.attestation) : null,
     ]);
   }
   async get(id: string): Promise<Watch | null> {
@@ -112,6 +120,10 @@ export class PgWatchStore implements WatchStore {
     ]);
     return rows.map(rowToWatch);
   }
+  async listAll(): Promise<Watch[]> {
+    const rows = await this.db.query('SELECT * FROM watches ORDER BY created_at ASC', []);
+    return rows.map(rowToWatch);
+  }
 }
 
 function rowToWatch(r: Record<string, unknown>): Watch {
@@ -120,6 +132,12 @@ function rowToWatch(r: Record<string, unknown>): Watch {
     accountId: String(r.account_id),
     subject: toJson(r.subject, {}) as Record<string, unknown>,
     lastValuationId: r.last_valuation_id == null ? undefined : String(r.last_valuation_id),
+    attestation: r.attestation == null ? undefined : (toJson(r.attestation, {}) as Record<string, unknown>),
+    lastAsIs: toNumberOrUndef(r.last_as_is),
+    lastArv: toNumberOrUndef(r.last_arv),
+    lastCheckedAt: toNumberOrUndef(r.last_checked_at),
+    changeDelta: toNumberOrUndef(r.change_delta),
+    notifiedAt: toNumberOrUndef(r.notified_at),
     webhookUrl: r.webhook_url == null ? undefined : String(r.webhook_url),
     createdAt: toNumber(r.created_at),
   };
@@ -165,10 +183,10 @@ export class PgCaptureSessionStore implements CaptureSessionStore {
 // --- Scope of work ---------------------------------------------------------
 
 const SOW_UPSERT = `
-INSERT INTO scope_of_work (id, account_id, subject, line_items, detected_tier, true_scope_arv, reasoning, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO scope_of_work (id, account_id, subject, line_items, detected_tier, true_scope_arv, reasoning, created_at, attestation)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 ON CONFLICT (id) DO UPDATE SET
-  subject = EXCLUDED.subject, line_items = EXCLUDED.line_items`;
+  subject = EXCLUDED.subject, line_items = EXCLUDED.line_items, attestation = EXCLUDED.attestation`;
 
 export class PgScopeStore implements ScopeStore {
   private readonly db: SqlClient;
@@ -185,6 +203,7 @@ export class PgScopeStore implements ScopeStore {
       null,
       null,
       s.createdAt,
+      s.attestation ? JSON.stringify(s.attestation) : null,
     ]);
   }
   async get(id: string): Promise<ScopeOfWork | null> {
@@ -196,6 +215,7 @@ export class PgScopeStore implements ScopeStore {
       accountId: String(r.account_id),
       subject: r.subject == null ? undefined : (toJson(r.subject, {}) as Record<string, unknown>),
       lineItems: toJson(r.line_items, []) as ScopeOfWork['lineItems'],
+      attestation: r.attestation == null ? undefined : (toJson(r.attestation, {}) as Record<string, unknown>),
       createdAt: toNumber(r.created_at),
     };
   }

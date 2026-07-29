@@ -13,10 +13,32 @@ async function main(): Promise<void> {
   const app = await buildApp(cfg);
   const server = createHttpServer(app.api);
 
+  // §5.3 live valuation monitoring — sweep watches on a fixed cadence.
+  let monitorTimer: NodeJS.Timeout | undefined;
+  if (cfg.watchIntervalMs > 0) {
+    let sweeping = false;
+    monitorTimer = setInterval(async () => {
+      if (sweeping) return; // never overlap sweeps
+      sweeping = true;
+      try {
+        const r = await app.monitor.tick();
+        if (r.checked > 0) {
+          console.log(`[watch-monitor] checked=${r.checked} changed=${r.changed} notified=${r.notified} failed=${r.failed}`);
+        }
+      } catch (err) {
+        console.error('[watch-monitor] sweep error:', err);
+      } finally {
+        sweeping = false;
+      }
+    }, cfg.watchIntervalMs);
+    monitorTimer.unref();
+  }
+
   server.listen(cfg.port, () => {
     console.log(
       `{{BRAND_NAME}} API listening on :${cfg.port} ` +
-        `[storage=${app.mode.storage} data=${app.mode.data} env=${cfg.nodeEnv}]`,
+        `[storage=${app.mode.storage} data=${app.mode.data} pdf=${app.mode.pdf} ` +
+        `watch=${cfg.watchIntervalMs > 0 ? `${cfg.watchIntervalMs}ms` : 'off'} env=${cfg.nodeEnv}]`,
     );
     if (app.mode.data === 'mock' && cfg.nodeEnv === 'production') {
       console.warn('WARNING: running in production with the MOCK data provider — set ATTOM_API_KEY.');
@@ -26,6 +48,7 @@ async function main(): Promise<void> {
 
   const shutdown = (signal: string) => {
     console.log(`\n${signal} received — shutting down.`);
+    if (monitorTimer) clearInterval(monitorTimer);
     server.close(async () => {
       await app.dispose();
       process.exit(0);
