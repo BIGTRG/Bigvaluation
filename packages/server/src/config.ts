@@ -52,6 +52,8 @@ export interface ServerConfig {
 
   /** Base URLs used in generated links. */
   captureBaseUrl: string;
+  /** Public base URL of the web app — used for borrower send-a-link SOW URLs. */
+  appBaseUrl: string;
   reportsBaseUrl: string;
 
   /**
@@ -97,6 +99,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     watchChangeThreshold: floatEnv(env.WATCH_CHANGE_THRESHOLD, 0.02),
 
     captureBaseUrl: strEnv(env.CAPTURE_BASE_URL) ?? 'https://capture.example.com',
+    appBaseUrl: strEnv(env.APP_BASE_URL) ?? 'https://{{BRAND_DOMAIN}}',
     reportsBaseUrl: strEnv(env.REPORTS_BASE_URL) ?? 'https://reports.example.com',
 
     seedApiKey: strEnv(env.SEED_API_KEY),

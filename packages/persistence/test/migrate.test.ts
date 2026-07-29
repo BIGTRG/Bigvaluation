@@ -16,8 +16,8 @@ test('migrationFiles returns ordered SQL with the schema', () => {
 test('migrate applies each file against the client', async () => {
   const db = new FakeSqlClient();
   const applied = await migrate(db);
-  assert.deepEqual(applied, ['0001_init.sql', '0002_compliance_monitoring.sql', '0003_billing.sql']);
-  assert.equal(db.calls.length, 3);
+  assert.deepEqual(applied, ['0001_init.sql', '0002_compliance_monitoring.sql', '0003_billing.sql', '0004_material_intelligence.sql']);
+  assert.equal(db.calls.length, 4);
   assert.match(db.calls[0].text, /CREATE TABLE IF NOT EXISTS accounts/);
   assert.match(db.calls[1].text, /attestation/);
 });
@@ -25,7 +25,7 @@ test('migrate applies each file against the client', async () => {
 test('createPgStores wires every store to one client', () => {
   const db = new FakeSqlClient();
   const stores = createPgStores(db);
-  for (const key of ['jobStore', 'apiKeys', 'meter', 'watches', 'captures', 'scopes'] as const) {
+  for (const key of ['jobStore', 'apiKeys', 'meter', 'watches', 'captures', 'scopes', 'materialAnalyses', 'materialLinks'] as const) {
     assert.ok(stores[key], `missing ${key}`);
   }
 });

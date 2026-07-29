@@ -16,6 +16,10 @@ import type {
   CaptureSession,
   ScopeStore,
   ScopeOfWork,
+  MaterialAnalysisStore,
+  MaterialAnalysisRecord,
+  MaterialLinkStore,
+  MaterialLinkRecord,
 } from './types.ts';
 import { hashSecret } from './auth.ts';
 
@@ -71,6 +75,44 @@ export class InMemoryCaptureSessionStore implements CaptureSessionStore {
   async get(id: string): Promise<CaptureSession | null> {
     const s = this.byId.get(id);
     return s ? structuredClone(s) : null;
+  }
+}
+
+export class InMemoryMaterialAnalysisStore implements MaterialAnalysisStore {
+  private readonly byId = new Map<string, MaterialAnalysisRecord>();
+  async save(a: MaterialAnalysisRecord): Promise<void> {
+    this.byId.set(a.id, structuredClone(a));
+  }
+  async get(id: string): Promise<MaterialAnalysisRecord | null> {
+    const a = this.byId.get(id);
+    return a ? structuredClone(a) : null;
+  }
+  async listByAccount(accountId: string): Promise<MaterialAnalysisRecord[]> {
+    return [...this.byId.values()]
+      .filter((a) => a.accountId === accountId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map((a) => structuredClone(a));
+  }
+}
+
+export class InMemoryMaterialLinkStore implements MaterialLinkStore {
+  private readonly byId = new Map<string, MaterialLinkRecord>();
+  async save(l: MaterialLinkRecord): Promise<void> {
+    this.byId.set(l.id, structuredClone(l));
+  }
+  async get(id: string): Promise<MaterialLinkRecord | null> {
+    const l = this.byId.get(id);
+    return l ? structuredClone(l) : null;
+  }
+  async getByToken(token: string): Promise<MaterialLinkRecord | null> {
+    for (const l of this.byId.values()) if (l.token === token) return structuredClone(l);
+    return null;
+  }
+  async listByAccount(accountId: string): Promise<MaterialLinkRecord[]> {
+    return [...this.byId.values()]
+      .filter((l) => l.accountId === accountId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map((l) => structuredClone(l));
   }
 }
 

@@ -22,6 +22,8 @@ import {
   InMemoryWatchStore,
   InMemoryCaptureSessionStore,
   InMemoryScopeStore,
+  InMemoryMaterialAnalysisStore,
+  InMemoryMaterialLinkStore,
 } from './stores.ts';
 
 export interface DemoApi {
@@ -94,6 +96,11 @@ export function createDemoApi(opts: { clock?: { now: () => number }; idFactory?:
     clock: opts.clock,
     idFactory: opts.idFactory,
     captureBaseUrl: 'https://capture.example.com',
+    materials: {
+      analyses: new InMemoryMaterialAnalysisStore(),
+      links: new InMemoryMaterialLinkStore(),
+      linkBaseUrl: 'https://app.example.com',
+    },
   };
 
   return {

@@ -23,4 +23,6 @@ export {
   InMemoryWatchStore,
   InMemoryCaptureSessionStore,
   InMemoryScopeStore,
+  InMemoryMaterialAnalysisStore,
+  InMemoryMaterialLinkStore,
 } from './stores.ts';

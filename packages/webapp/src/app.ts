@@ -12,6 +12,15 @@ import { createSessionCodec } from './session.ts';
 import type { SessionCodec } from './session.ts';
 import { loginPage, dashboardPage, newValuationPage, watchesPage, billingPage, errorPage } from './pages.ts';
 import type { ValuationRow, WatchRow } from './pages.ts';
+import {
+  materialsPage,
+  materialBuilderPage,
+  materialAnalysisPage,
+  borrowerSowPage,
+  borrowerDonePage,
+  borrowerClosedPage,
+} from './materialsPages.ts';
+import type { MatrixCategoryView, AnalysisSummaryRow, LinkRow, ValuationOption, AnalysisView } from './materialsPages.ts';
 
 export interface WebAppOptions {
   api: Api;
@@ -27,6 +36,9 @@ const FLASHES: Record<string, { kind: 'ok' | 'error'; text: string }> = {
   failed: { kind: 'error', text: 'The valuation failed — check the address and try again.' },
   bad_key: { kind: 'error', text: 'That API key was rejected.' },
   signed_out: { kind: 'ok', text: 'Signed out.' },
+  analysis_created: { kind: 'ok', text: 'Analyst read-out ready — the true finish level and materials-driven ARV are below.' },
+  analysis_failed: { kind: 'error', text: 'The analyst could not read that scope — provide recognizable material choices.' },
+  link_created: { kind: 'ok', text: 'Borrower link created — copy it from the list below and send it.' },
 };
 
 export class WebApp {
@@ -54,6 +66,11 @@ export class WebApp {
       if (req.path === '/app/logout' && req.method === 'POST') {
         return redirect('/app/login?m=signed_out', this.sessions.clear());
       }
+      // Borrower send-a-link pages: public, token is the only credential.
+      const sow = req.path.match(/^\/app\/sow\/([A-Za-z0-9_-]+)$/);
+      if (sow && req.method === 'GET') return this.borrowerForm(sow[1]);
+      if (sow && req.method === 'POST') return this.borrowerSubmit(req, sow[1]);
+
       if (!key) return redirect('/app/login');
 
       // --- authenticated routes --------------------------------------------
@@ -64,6 +81,12 @@ export class WebApp {
       if (req.path === '/app/watches' && req.method === 'POST') return this.createWatch(req, key);
       if (req.path === '/app/billing' && req.method === 'GET') return this.billing(key, flash);
       if (req.path === '/app/billing/checkout' && req.method === 'POST') return this.checkout(req, key);
+      if (req.path === '/app/materials' && req.method === 'GET') return this.materials(key, flash);
+      if (req.path === '/app/materials/new' && req.method === 'GET') return this.materialBuilder(key, flash);
+      if (req.path === '/app/materials/new' && req.method === 'POST') return this.createAnalysis(req, key);
+      if (req.path === '/app/materials/link' && req.method === 'POST') return this.createMaterialLink(req, key);
+      const analysis = req.path.match(/^\/app\/materials\/([A-Za-z0-9_-]+)$/);
+      if (analysis && req.method === 'GET') return this.analysisView(analysis[1], key, flash);
       const report = req.path.match(/^\/app\/reports\/([A-Za-z0-9_-]+)$/);
       if (report && req.method === 'GET') return this.report(report[1], key);
 
@@ -140,6 +163,97 @@ export class WebApp {
     return redirect('/app/watches?m=watch_created');
   }
 
+  // --- Material Intelligence (§4.3 add-on) -----------------------------------
+
+  private async materials(key: string, flash?: (typeof FLASHES)[string]): Promise<ApiResponse> {
+    const [aRes, lRes] = await Promise.all([
+      this.callApi(key, 'GET', '/material-analyses'),
+      this.callApi(key, 'GET', '/material-links'),
+    ]);
+    if (aRes.status === 401) return redirect('/app/login?m=bad_key', this.sessions.clear());
+    const analyses = ((aRes.body as { analyses?: AnalysisSummaryRow[] }).analyses ?? []) as AnalysisSummaryRow[];
+    const links = ((lRes.body as { links?: LinkRow[] }).links ?? []) as LinkRow[];
+    return html(materialsPage(analyses, links, flash));
+  }
+
+  private async materialBuilder(key: string, flash?: (typeof FLASHES)[string]): Promise<ApiResponse> {
+    const [mRes, vRes] = await Promise.all([
+      this.callApi(key, 'GET', '/material-matrix'),
+      this.callApi(key, 'GET', '/valuations'),
+    ]);
+    const categories = ((mRes.body as { categories?: MatrixCategoryView[] }).categories ?? []) as MatrixCategoryView[];
+    const valuations = (((vRes.body as { valuations?: ValuationRow[] }).valuations ?? []) as ValuationRow[])
+      .filter((v) => v.status === 'completed')
+      .map((v): ValuationOption => ({ id: v.id, address: (v as { address?: string }).address, arvMedium: (v.arv as Record<string, number> | undefined)?.medium }));
+    return html(materialBuilderPage(categories, valuations, flash));
+  }
+
+  private async createAnalysis(req: ApiRequest, key: string): Promise<ApiResponse> {
+    const form = parseForm(req);
+    if (form.get('businessPurpose') !== 'true' || form.get('nonOwnerOccupied') !== 'true') {
+      return redirect('/app/materials/new?m=attestation');
+    }
+    const body: Record<string, unknown> = {
+      materials: materialsFromForm(form),
+      attestation: { businessPurpose: true, nonOwnerOccupied: true, attestedBy: 'webapp' },
+      source: 'builder',
+    };
+    const valuationId = form.get('valuationId')?.trim();
+    if (valuationId) body.valuationId = valuationId;
+    const res = await this.callApi(key, 'POST', '/material-analyses', body);
+    if (res.status === 422) return redirect('/app/materials/new?m=attestation');
+    if (res.status >= 400) return redirect('/app/materials/new?m=analysis_failed');
+    const id = (res.body as { id?: string }).id;
+    return redirect(`/app/materials/${id}?m=analysis_created`);
+  }
+
+  private async createMaterialLink(req: ApiRequest, key: string): Promise<ApiResponse> {
+    const form = parseForm(req);
+    if (form.get('businessPurpose') !== 'true' || form.get('nonOwnerOccupied') !== 'true') {
+      return redirect('/app/materials/new?m=attestation');
+    }
+    const body: Record<string, unknown> = {
+      attestation: { businessPurpose: true, nonOwnerOccupied: true, attestedBy: 'webapp' },
+    };
+    const valuationId = form.get('valuationId')?.trim();
+    if (valuationId) body.valuationId = valuationId;
+    const address = form.get('address')?.trim();
+    if (address) body.subject = { address };
+    const res = await this.callApi(key, 'POST', '/material-links', body);
+    if (res.status >= 400) return redirect('/app/materials/new?m=attestation');
+    return redirect('/app/materials?m=link_created');
+  }
+
+  private async analysisView(id: string, key: string, flash?: (typeof FLASHES)[string]): Promise<ApiResponse> {
+    const res = await this.callApi(key, 'GET', `/material-analyses/${id}`);
+    if (res.status !== 200) {
+      return { status: res.status, body: errorPage(res.status, 'Analysis not available.', true), headers: HTML };
+    }
+    return html(materialAnalysisPage(res.body as AnalysisView, flash));
+  }
+
+  private async borrowerForm(token: string, errorText?: string): Promise<ApiResponse> {
+    const res = await this.api.handle({ method: 'GET', path: `/material-links/t/${token}`, headers: {}, query: {} });
+    if (res.status === 404) return { status: 404, body: errorPage(404, 'This link does not exist.', false), headers: HTML };
+    const body = res.body as { status: string; address?: string; categories: MatrixCategoryView[] };
+    if (body.status !== 'open') return html(borrowerClosedPage(body.status));
+    return html(borrowerSowPage(token, body.address, body.categories, errorText));
+  }
+
+  private async borrowerSubmit(req: ApiRequest, token: string): Promise<ApiResponse> {
+    const form = parseForm(req);
+    const res = await this.api.handle({
+      method: 'POST',
+      path: `/material-links/t/${token}`,
+      headers: { 'content-type': 'application/json' },
+      query: {},
+      body: { materials: materialsFromForm(form) },
+    });
+    if (res.status === 201) return html(borrowerDonePage());
+    if (res.status === 409) return html(borrowerClosedPage('submitted'));
+    return this.borrowerForm(token, 'Add at least one material — fill what you know and submit again.');
+  }
+
   private async billing(key: string, flash?: (typeof FLASHES)[string]): Promise<ApiResponse> {
     const res = await this.callApi(key, 'GET', '/billing/account');
     const enabled = res.status === 200;
@@ -201,6 +315,25 @@ function redirect(location: string, setCookie?: string): ApiResponse {
   const headers: Record<string, string> = { location };
   if (setCookie) headers['set-cookie'] = setCookie;
   return { status: 303, body: '', headers };
+}
+
+/** Collect `mat_<category>` fields + the free-text `extra` lines. */
+function materialsFromForm(form: URLSearchParams): { category?: string; material: string }[] {
+  const out: { category?: string; material: string }[] = [];
+  for (const [k, v] of form.entries()) {
+    if (k.startsWith('mat_') && v.trim()) out.push({ category: k.slice(4), material: v.trim() });
+  }
+  const extra = form.get('extra');
+  if (extra?.trim()) {
+    for (const line of extra.split(/\r?\n/)) {
+      const t = line.trim();
+      if (!t) continue;
+      const idx = t.indexOf(':');
+      if (idx > 0 && idx <= 40) out.push({ category: t.slice(0, idx).trim(), material: t.slice(idx + 1).trim() });
+      else out.push({ material: t });
+    }
+  }
+  return out;
 }
 
 function parseForm(req: ApiRequest): URLSearchParams {

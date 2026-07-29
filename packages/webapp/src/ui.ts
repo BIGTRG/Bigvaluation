@@ -123,7 +123,7 @@ form.stack input:focus { outline: 2px solid var(--gold); border-color: var(--gol
 
 export interface PageOptions {
   title: string;
-  active?: 'dashboard' | 'new' | 'watches' | 'billing' | 'none';
+  active?: 'dashboard' | 'new' | 'watches' | 'materials' | 'billing' | 'none';
   authed?: boolean;
   flash?: { kind: 'ok' | 'error'; text: string };
 }
@@ -138,6 +138,7 @@ export function page(opts: PageOptions, body: string): string {
         <a href="/app" class="${opts.active === 'dashboard' ? 'active' : ''}">Valuations</a>
         <a href="/app/valuations/new" class="${opts.active === 'new' ? 'active' : ''}">New valuation</a>
         <a href="/app/watches" class="${opts.active === 'watches' ? 'active' : ''}">Watches</a>
+        <a href="/app/materials" class="${opts.active === 'materials' ? 'active' : ''}">Materials</a>
         <a href="/app/billing" class="${opts.active === 'billing' ? 'active' : ''}">Billing</a>
       </nav>
       <form method="post" action="/app/logout"><button class="linklike" type="submit">Sign out</button></form>`

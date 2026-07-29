@@ -22,6 +22,15 @@ import { Router } from './router.ts';
 import { Authenticator, hasScope } from './auth.ts';
 import type { Orchestrator, JobStore, WebhookDispatcher, Job } from '../../orchestration/src/index.ts';
 import { buildScope, buildScopes, toRehabScopes, type ScopeSubject } from '../../scope-studio/src/index.ts';
+import {
+  analyzeMaterials,
+  parseMaterialText,
+  MATERIAL_MATRIX,
+  type MaterialLine,
+  type TierValues,
+  type Reasoner,
+} from '../../material-intelligence/src/index.ts';
+import type { MaterialAnalysisStore, MaterialLinkStore, MaterialAnalysisRecord, MaterialLinkRecord } from './types.ts';
 
 export interface AppDeps {
   orchestrator: Orchestrator;
@@ -40,6 +49,15 @@ export interface AppDeps {
   idFactory?: () => string;
   /** Base URL for the tokenized mobile capture link (§4.1). */
   captureBaseUrl?: string;
+  /** Material Intelligence (§4.3 add-on). Absent = routes return 409. */
+  materials?: {
+    analyses: MaterialAnalysisStore;
+    links: MaterialLinkStore;
+    /** Base URL for borrower send-a-link pages (webapp /app/sow/:token). */
+    linkBaseUrl?: string;
+    /** Optional LLM reasoner (Claude) — numbers stay deterministic. */
+    reasoner?: Reasoner;
+  };
 }
 
 interface HandlerCtx {
@@ -82,6 +100,17 @@ export class Api {
     r.add({ id: 'watches.list', method: 'GET', pattern: '/watches', scope: 'watches:read', handler: this.listWatches });
     r.add({ id: 'captureSessions.create', method: 'POST', pattern: '/capture-sessions', scope: 'capture:write', handler: this.createCaptureSession });
     r.add({ id: 'scopeOfWork.create', method: 'POST', pattern: '/scope-of-work', scope: 'scope:write', handler: this.createScope });
+    // Material Intelligence (§4.3 add-on) — premium, billable analyst runs.
+    r.add({ id: 'materials.matrix', method: 'GET', pattern: '/material-matrix', scope: 'scope:read', handler: this.getMaterialMatrix });
+    r.add({ id: 'materials.analyze', method: 'POST', pattern: '/material-analyses', scope: 'scope:write', billable: true, handler: this.createMaterialAnalysis });
+    r.add({ id: 'materials.list', method: 'GET', pattern: '/material-analyses', scope: 'scope:read', handler: this.listMaterialAnalyses });
+    r.add({ id: 'materials.get', method: 'GET', pattern: '/material-analyses/:id', scope: 'scope:read', handler: this.getMaterialAnalysis });
+    r.add({ id: 'materialLinks.create', method: 'POST', pattern: '/material-links', scope: 'scope:write', handler: this.createMaterialLink });
+    r.add({ id: 'materialLinks.list', method: 'GET', pattern: '/material-links', scope: 'scope:read', handler: this.listMaterialLinks });
+    // Borrower-facing send-a-link flow: the token is the only credential, and
+    // the borrower never sees values — submission confirms only.
+    r.add({ id: 'materialLinks.peek', method: 'GET', pattern: '/material-links/t/:token', public: true, handler: this.peekMaterialLink });
+    r.add({ id: 'materialLinks.submit', method: 'POST', pattern: '/material-links/t/:token', public: true, handler: this.submitMaterialLink });
     r.add({ id: 'webhooks.create', method: 'POST', pattern: '/webhooks', scope: 'webhooks:write', handler: this.registerWebhook });
     r.add({ id: 'billing.checkout', method: 'POST', pattern: '/billing/checkout', scope: 'billing:write', handler: this.createCheckout });
     r.add({ id: 'billing.account', method: 'GET', pattern: '/billing/account', scope: 'billing:read', handler: this.getBillingAccount });
@@ -309,6 +338,190 @@ export class Api {
     return json(201, { id: scope.id, lineItems, totalUsd: total });
   };
 
+  // --- Material Intelligence (§4.3 add-on) ----------------------------------
+
+  private getMaterialMatrix = async (): Promise<ApiResponse> => {
+    return json(200, {
+      categories: MATERIAL_MATRIX.map((c) => ({
+        id: c.id,
+        label: c.label,
+        capping: c.capping,
+        examples: c.examples,
+      })),
+    });
+  };
+
+  private createMaterialAnalysis = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const body = asObject(ctx.req.body);
+    // A true-scope ARV is a valuation output — the investor-only lock applies.
+    const attestation = requireAttestation(body, ctx.now);
+    if (isAttestationError(attestation)) return json(422, attestation);
+
+    const materials = extractMaterials(body);
+    if (!materials.length) {
+      return json(400, { error: 'invalid_request', detail: 'Provide materials[] ({category, material}) or text (one material per line)' });
+    }
+
+    const resolved = await this.resolveAnalysisAnchor(body, ctx);
+    if ('error' in resolved) return json(resolved.status, { error: resolved.error, detail: resolved.detail });
+
+    let analysis;
+    try {
+      analysis = analyzeMaterials(materials, resolved.subject, resolved.values, { reasoner: this.deps.materials.reasoner });
+    } catch (err) {
+      return json(400, { error: 'invalid_request', detail: err instanceof Error ? err.message : String(err) });
+    }
+
+    const record: MaterialAnalysisRecord = {
+      id: ctx.newId('mia'),
+      accountId: ctx.auth.accountId,
+      valuationId: resolved.valuationId,
+      subject: resolved.subject as Record<string, unknown>,
+      materials,
+      analysis: analysis as unknown as Record<string, unknown>,
+      source: typeof body.source === 'string' ? body.source : 'builder',
+      attestation: attestation as unknown as Record<string, unknown>,
+      createdAt: ctx.now,
+    };
+    await this.deps.materials.analyses.save(record);
+    return json(201, materialAnalysisSummary(record));
+  };
+
+  private listMaterialAnalyses = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const records = await this.deps.materials.analyses.listByAccount(ctx.auth.accountId);
+    return json(200, { analyses: records.map(materialAnalysisSummary) });
+  };
+
+  private getMaterialAnalysis = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const record = await this.deps.materials.analyses.get(ctx.params.id);
+    if (!record || record.accountId !== ctx.auth.accountId) return json(404, { error: 'not_found' });
+    return json(200, materialAnalysisSummary(record));
+  };
+
+  private createMaterialLink = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const body = asObject(ctx.req.body);
+    // The link produces an analysis later, so the attestation is captured NOW
+    // from the investor and reused at borrower submit time (audit trail).
+    const attestation = requireAttestation(body, ctx.now);
+    if (isAttestationError(attestation)) return json(422, attestation);
+
+    const resolved = await this.resolveAnalysisAnchor(body, ctx);
+    if ('error' in resolved) return json(resolved.status, { error: resolved.error, detail: resolved.detail });
+
+    const id = ctx.newId('mlk');
+    const token = `${ctx.newId('sowt')}${Math.random().toString(36).slice(2, 10)}`;
+    const base = (this.deps.materials.linkBaseUrl ?? 'https://{{BRAND_DOMAIN}}').replace(/\/$/, '');
+    const link: MaterialLinkRecord = {
+      id,
+      token,
+      accountId: ctx.auth.accountId,
+      valuationId: resolved.valuationId,
+      subject: resolved.subject as Record<string, unknown>,
+      url: `${base}/app/sow/${token}`,
+      status: 'open',
+      attestation: attestation as unknown as Record<string, unknown>,
+      createdAt: ctx.now,
+    };
+    await this.deps.materials.links.save(link);
+    return json(201, { id: link.id, url: link.url, status: link.status, valuationId: link.valuationId });
+  };
+
+  private listMaterialLinks = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const links = await this.deps.materials.links.listByAccount(ctx.auth.accountId);
+    return json(200, {
+      links: links.map((l) => ({
+        id: l.id, url: l.url, status: l.status, valuationId: l.valuationId,
+        analysisId: l.analysisId, createdAt: l.createdAt, submittedAt: l.submittedAt,
+        subject: l.subject ? { address: (l.subject as { address?: string }).address } : undefined,
+      })),
+    });
+  };
+
+  /** Borrower view: enough to render the form — never any values. */
+  private peekMaterialLink = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const link = await this.deps.materials.links.getByToken(ctx.params.token);
+    if (!link) return json(404, { error: 'not_found' });
+    return json(200, {
+      status: link.status,
+      address: (link.subject as { address?: string } | undefined)?.address,
+      categories: MATERIAL_MATRIX.map((c) => ({ id: c.id, label: c.label, examples: c.examples })),
+    });
+  };
+
+  /** Borrower submit: runs the analysis for the OWNER; confirms only. */
+  private submitMaterialLink = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.materials) return json(409, { error: 'materials_unavailable' });
+    const link = await this.deps.materials.links.getByToken(ctx.params.token);
+    if (!link) return json(404, { error: 'not_found' });
+    if (link.status !== 'open') return json(409, { error: 'link_closed', detail: `link status: ${link.status}` });
+
+    const body = asObject(ctx.req.body);
+    const materials = extractMaterials(body);
+    if (!materials.length) {
+      return json(400, { error: 'invalid_request', detail: 'Provide materials[] or text' });
+    }
+
+    const values = link.valuationId ? await this.tierValuesFromJob(link.valuationId) : undefined;
+    let analysis;
+    try {
+      analysis = analyzeMaterials(materials, (link.subject ?? {}) as { sqft?: number }, values, { reasoner: this.deps.materials.reasoner });
+    } catch (err) {
+      return json(400, { error: 'invalid_request', detail: err instanceof Error ? err.message : String(err) });
+    }
+
+    const record: MaterialAnalysisRecord = {
+      id: this.newId('mia'),
+      accountId: link.accountId,
+      valuationId: link.valuationId,
+      subject: link.subject,
+      materials,
+      analysis: analysis as unknown as Record<string, unknown>,
+      source: 'link',
+      attestation: link.attestation,
+      createdAt: ctx.now,
+    };
+    await this.deps.materials.analyses.save(record);
+    await this.deps.materials.links.save({ ...link, status: 'submitted', analysisId: record.id, submittedAt: ctx.now });
+    // The borrower gets a receipt, never the numbers.
+    return json(201, { status: 'submitted' });
+  };
+
+  /** Resolve subject + tier ARVs from a valuationId (ownership-checked) or raw subject. */
+  private async resolveAnalysisAnchor(
+    body: Record<string, unknown>,
+    ctx: HandlerCtx,
+  ): Promise<
+    | { valuationId?: string; subject: { sqft?: number; finishedSqft?: number; address?: string }; values?: TierValues }
+    | { status: number; error: string; detail?: string }
+  > {
+    const valuationId = typeof body.valuationId === 'string' ? body.valuationId : undefined;
+    let subject = (asObject(body.subject) ?? {}) as { sqft?: number; finishedSqft?: number; address?: string };
+    let values: TierValues | undefined;
+    if (valuationId) {
+      const job = await this.deps.jobStore.get(valuationId);
+      if (!job || !ownsJob(job, ctx.auth)) return { status: 404, error: 'not_found', detail: 'valuation not found' };
+      values = await this.tierValuesFromJob(valuationId);
+      if (!values) return { status: 409, error: 'not_ready', detail: 'valuation has no completed tier values' };
+      const jobSubject = job.input.subject as { sqft?: number; finishedSqft?: number; address?: string } | undefined;
+      subject = { ...jobSubject, ...subject };
+    }
+    return { valuationId, subject, values };
+  }
+
+  private async tierValuesFromJob(valuationId: string): Promise<TierValues | undefined> {
+    const job = await this.deps.jobStore.get(valuationId);
+    const v = job?.context.valuation as { arv?: Record<string, number> } | undefined;
+    const arv = v?.arv;
+    if (!arv || typeof arv.light !== 'number' || typeof arv.medium !== 'number' || typeof arv.high !== 'number') return undefined;
+    return { arv: { light: arv.light, medium: arv.medium, high: arv.high } };
+  }
+
   private listWatches = async (ctx: HandlerCtx): Promise<ApiResponse> => {
     const watches = await this.deps.watches.listByAccount(ctx.auth.accountId);
     return json(200, { watches });
@@ -390,6 +603,34 @@ function numberOrUndef(v: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+/** Materials from `materials[]` or free `text` (uploads paste as text). */
+function extractMaterials(body: Record<string, unknown>): MaterialLine[] {
+  if (Array.isArray(body.materials)) {
+    return body.materials
+      .map((m) => asObject(m))
+      .filter((m): m is Record<string, unknown> => !!m && typeof m.material === 'string' && !!(m.material as string).trim())
+      .map((m) => ({
+        category: typeof m.category === 'string' && m.category.trim() ? m.category.trim() : undefined,
+        material: (m.material as string).trim(),
+      }));
+  }
+  if (typeof body.text === 'string' && body.text.trim()) return parseMaterialText(body.text);
+  return [];
+}
+
+function materialAnalysisSummary(r: MaterialAnalysisRecord) {
+  return {
+    id: r.id,
+    valuationId: r.valuationId,
+    subject: r.subject,
+    materials: r.materials,
+    source: r.source,
+    createdAt: r.createdAt,
+    ...r.analysis,
+    links: { self: `/material-analyses/${r.id}`, valuation: r.valuationId ? `/valuations/${r.valuationId}` : undefined },
+  };
+}
+
 function ownsJob(job: Job, auth: AuthContext): boolean {
   return job.input.accountId === auth.accountId;
 }
@@ -401,6 +642,7 @@ function valuationSummary(job: Job) {
   return {
     id: job.id,
     status: job.status,
+    address: (job.input.subject as { address?: string } | undefined)?.address,
     asIs: v?.asIs,
     arv: v?.arv,
     confidence: v?.confidence ? { score: v.confidence.score, fsd: v.confidence.fsd } : undefined,

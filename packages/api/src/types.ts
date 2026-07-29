@@ -134,3 +134,51 @@ export interface ScopeStore {
   save(s: ScopeOfWork): Promise<void>;
   get(id: string): Promise<ScopeOfWork | null>;
 }
+
+// --- Material Intelligence (§4.3 add-on) ------------------------------------
+
+/** A stored analyst run: materials in, true finish tier + explained ARV out. */
+export interface MaterialAnalysisRecord {
+  id: string;
+  accountId: string;
+  /** The valuation whose tier ARVs anchored the true-scope ARV, if any. */
+  valuationId?: string;
+  subject?: Record<string, unknown>;
+  materials: { category?: string; material: string }[];
+  /** The full MaterialAnalysis output (lines, scores, reasoning). */
+  analysis: Record<string, unknown>;
+  /** 'builder' | 'upload' | 'link' — how the materials arrived. */
+  source: string;
+  attestation?: Record<string, unknown>;
+  createdAt: number;
+}
+
+export interface MaterialAnalysisStore {
+  save(a: MaterialAnalysisRecord): Promise<void>;
+  get(id: string): Promise<MaterialAnalysisRecord | null>;
+  listByAccount(accountId: string): Promise<MaterialAnalysisRecord[]>;
+}
+
+/** A tokenized send-a-link SOW request the borrower fills without an account. */
+export interface MaterialLinkRecord {
+  id: string;
+  /** Unguessable URL token — the only credential the borrower holds. */
+  token: string;
+  accountId: string;
+  valuationId?: string;
+  subject?: Record<string, unknown>;
+  url: string;
+  status: 'open' | 'submitted' | 'expired';
+  /** Investor's attestation, recorded at link creation and reused on submit. */
+  attestation?: Record<string, unknown>;
+  analysisId?: string;
+  createdAt: number;
+  submittedAt?: number;
+}
+
+export interface MaterialLinkStore {
+  save(l: MaterialLinkRecord): Promise<void>;
+  get(id: string): Promise<MaterialLinkRecord | null>;
+  getByToken(token: string): Promise<MaterialLinkRecord | null>;
+  listByAccount(accountId: string): Promise<MaterialLinkRecord[]>;
+}

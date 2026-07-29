@@ -266,3 +266,122 @@ export class PgBillingStore implements BillingStore {
 }
 
 export { toNumberOrUndef };
+
+// --- Material Intelligence (§4.3 add-on) -------------------------------------
+
+import type {
+  MaterialAnalysisStore,
+  MaterialAnalysisRecord,
+  MaterialLinkStore,
+  MaterialLinkRecord,
+} from '../../../api/src/types.ts';
+
+const MIA_UPSERT = `
+INSERT INTO material_analyses (id, account_id, valuation_id, subject, materials, analysis, source, attestation, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject, materials = EXCLUDED.materials, analysis = EXCLUDED.analysis`;
+
+export class PgMaterialAnalysisStore implements MaterialAnalysisStore {
+  private readonly db: SqlClient;
+  constructor(db: SqlClient) {
+    this.db = db;
+  }
+  async save(a: MaterialAnalysisRecord): Promise<void> {
+    await this.db.query(MIA_UPSERT, [
+      a.id,
+      a.accountId,
+      a.valuationId ?? null,
+      a.subject ? JSON.stringify(a.subject) : null,
+      JSON.stringify(a.materials),
+      JSON.stringify(a.analysis),
+      a.source,
+      a.attestation ? JSON.stringify(a.attestation) : null,
+      a.createdAt,
+    ]);
+  }
+  async get(id: string): Promise<MaterialAnalysisRecord | null> {
+    const rows = await this.db.query('SELECT * FROM material_analyses WHERE id = $1', [id]);
+    return rows.length ? rowToAnalysis(rows[0]) : null;
+  }
+  async listByAccount(accountId: string): Promise<MaterialAnalysisRecord[]> {
+    const rows = await this.db.query(
+      'SELECT * FROM material_analyses WHERE account_id = $1 ORDER BY created_at DESC LIMIT 200',
+      [accountId],
+    );
+    return rows.map(rowToAnalysis);
+  }
+}
+
+function rowToAnalysis(r: Record<string, unknown>): MaterialAnalysisRecord {
+  return {
+    id: String(r.id),
+    accountId: String(r.account_id),
+    valuationId: r.valuation_id == null ? undefined : String(r.valuation_id),
+    subject: r.subject == null ? undefined : (toJson(r.subject, {}) as Record<string, unknown>),
+    materials: toJson(r.materials, []) as MaterialAnalysisRecord['materials'],
+    analysis: toJson(r.analysis, {}) as Record<string, unknown>,
+    source: String(r.source),
+    attestation: r.attestation == null ? undefined : (toJson(r.attestation, {}) as Record<string, unknown>),
+    createdAt: toNumber(r.created_at),
+  };
+}
+
+const MLK_UPSERT = `
+INSERT INTO material_links (id, token, account_id, valuation_id, subject, url, status, attestation, analysis_id, created_at, submitted_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+ON CONFLICT (id) DO UPDATE SET
+  status = EXCLUDED.status, analysis_id = EXCLUDED.analysis_id, submitted_at = EXCLUDED.submitted_at`;
+
+export class PgMaterialLinkStore implements MaterialLinkStore {
+  private readonly db: SqlClient;
+  constructor(db: SqlClient) {
+    this.db = db;
+  }
+  async save(l: MaterialLinkRecord): Promise<void> {
+    await this.db.query(MLK_UPSERT, [
+      l.id,
+      l.token,
+      l.accountId,
+      l.valuationId ?? null,
+      l.subject ? JSON.stringify(l.subject) : null,
+      l.url,
+      l.status,
+      l.attestation ? JSON.stringify(l.attestation) : null,
+      l.analysisId ?? null,
+      l.createdAt,
+      l.submittedAt ?? null,
+    ]);
+  }
+  async get(id: string): Promise<MaterialLinkRecord | null> {
+    const rows = await this.db.query('SELECT * FROM material_links WHERE id = $1', [id]);
+    return rows.length ? rowToLink(rows[0]) : null;
+  }
+  async getByToken(token: string): Promise<MaterialLinkRecord | null> {
+    const rows = await this.db.query('SELECT * FROM material_links WHERE token = $1', [token]);
+    return rows.length ? rowToLink(rows[0]) : null;
+  }
+  async listByAccount(accountId: string): Promise<MaterialLinkRecord[]> {
+    const rows = await this.db.query(
+      'SELECT * FROM material_links WHERE account_id = $1 ORDER BY created_at DESC LIMIT 200',
+      [accountId],
+    );
+    return rows.map(rowToLink);
+  }
+}
+
+function rowToLink(r: Record<string, unknown>): MaterialLinkRecord {
+  return {
+    id: String(r.id),
+    token: String(r.token),
+    accountId: String(r.account_id),
+    valuationId: r.valuation_id == null ? undefined : String(r.valuation_id),
+    subject: r.subject == null ? undefined : (toJson(r.subject, {}) as Record<string, unknown>),
+    url: String(r.url),
+    status: r.status as MaterialLinkRecord['status'],
+    attestation: r.attestation == null ? undefined : (toJson(r.attestation, {}) as Record<string, unknown>),
+    analysisId: r.analysis_id == null ? undefined : String(r.analysis_id),
+    createdAt: toNumber(r.created_at),
+    submittedAt: r.submitted_at == null ? undefined : toNumber(r.submitted_at),
+  };
+}

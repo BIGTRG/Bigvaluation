@@ -214,3 +214,85 @@ test('billing routes return 409 when Stripe is not configured', async () => {
   assert.equal(res.status, 409);
   assert.equal((res.body as any).error, 'billing_unavailable');
 });
+
+// --- Material Intelligence (§4.3 add-on) -------------------------------------
+
+test('material analysis: attestation-gated, billable, anchored to a valuation', async () => {
+  const demo = createDemoApi();
+  const auth = { authorization: `Bearer ${demo.apiKey}`, 'content-type': 'application/json' };
+  const attestation = { businessPurpose: true, nonOwnerOccupied: true };
+
+  // No attestation → 422, and nothing metered.
+  const blocked = await demo.api.handle({
+    method: 'POST', path: '/material-analyses', headers: auth, query: {},
+    body: { materials: [{ category: 'counters', material: 'granite' }] },
+  });
+  assert.equal(blocked.status, 422);
+
+  // Anchor valuation first.
+  const val = await demo.api.handle({
+    method: 'POST', path: '/valuations', headers: auth, query: {},
+    body: { subject: { address: '1420 Ashby St, Raleigh, NC' }, attestation },
+  });
+  assert.equal(val.status, 201);
+  const valuationId = (val.body as { id: string }).id;
+
+  const res = await demo.api.handle({
+    method: 'POST', path: '/material-analyses', headers: auth, query: {},
+    body: {
+      valuationId,
+      attestation,
+      materials: [
+        { category: 'counters', material: 'Granite / quartz' },
+        { category: 'flooring', material: 'Solid hardwood' },
+        { category: 'roof', material: 'Architectural shingle' },
+      ],
+    },
+  });
+  assert.equal(res.status, 201);
+  const body = res.body as { id: string; detectedTier: string; trueScopeArv?: number; reasoning: string };
+  assert.ok(body.trueScopeArv! > 0, 'true-scope ARV anchored to the valuation');
+  assert.ok(body.reasoning.length > 20);
+
+  // Readable by owner; billable run was metered.
+  const got = await demo.api.handle({ method: 'GET', path: `/material-analyses/${body.id}`, headers: auth, query: {} });
+  assert.equal(got.status, 200);
+  assert.ok(demo.meter.events.some((e) => e.endpoint === 'materials.analyze'));
+});
+
+test('borrower send-a-link: token flow submits for the owner, confirms only', async () => {
+  const demo = createDemoApi();
+  const auth = { authorization: `Bearer ${demo.apiKey}`, 'content-type': 'application/json' };
+  const attestation = { businessPurpose: true, nonOwnerOccupied: true };
+
+  const link = await demo.api.handle({
+    method: 'POST', path: '/material-links', headers: auth, query: {},
+    body: { attestation, subject: { address: '1420 Ashby St' } },
+  });
+  assert.equal(link.status, 201);
+  const url = (link.body as { url: string }).url;
+  const token = url.split('/app/sow/')[1];
+  assert.ok(token, 'link URL carries the token');
+
+  // Borrower peeks (public, no auth) — form data only, never values.
+  const peek = await demo.api.handle({ method: 'GET', path: `/material-links/t/${token}`, headers: {}, query: {} });
+  assert.equal(peek.status, 200);
+  assert.equal((peek.body as { address?: string }).address, '1420 Ashby St');
+
+  // Borrower submits — receipt only.
+  const submit = await demo.api.handle({
+    method: 'POST', path: `/material-links/t/${token}`, headers: {}, query: {},
+    body: { text: 'counters: granite\nflooring: LVP' },
+  });
+  assert.equal(submit.status, 201);
+  assert.deepEqual(submit.body, { status: 'submitted' });
+
+  // Second submit is refused; owner sees the analysis in their list.
+  const again = await demo.api.handle({
+    method: 'POST', path: `/material-links/t/${token}`, headers: {}, query: {},
+    body: { text: 'counters: granite' },
+  });
+  assert.equal(again.status, 409);
+  const list = await demo.api.handle({ method: 'GET', path: '/material-analyses', headers: auth, query: {} });
+  assert.equal((list.body as { analyses: { source: string }[] }).analyses[0].source, 'link');
+});

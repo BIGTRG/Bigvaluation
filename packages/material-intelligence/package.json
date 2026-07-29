@@ -1,0 +1,21 @@
+{
+  "name": "@flip-master/material-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Material Intelligence (§4.3 add-on) — maps an investor's actual material choices to a true finish tier and a defensible, explained ARV.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "test:watch": "node --test --watch \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

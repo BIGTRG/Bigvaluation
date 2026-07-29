@@ -32,6 +32,8 @@ import {
   InMemoryWatchStore,
   InMemoryCaptureSessionStore,
   InMemoryScopeStore,
+  InMemoryMaterialAnalysisStore,
+  InMemoryMaterialLinkStore,
   hashSecret,
 } from '../../api/src/index.ts';
 import type {
@@ -40,6 +42,8 @@ import type {
   WatchStore,
   CaptureSessionStore,
   ScopeStore,
+  MaterialAnalysisStore,
+  MaterialLinkStore,
 } from '../../api/src/index.ts';
 import type { ServerConfig } from './config.ts';
 import { hasRealProviders } from './config.ts';
@@ -61,6 +65,8 @@ export interface StoresBundle {
   watches: WatchStore;
   captures: CaptureSessionStore;
   scopes: ScopeStore;
+  materialAnalyses: MaterialAnalysisStore;
+  materialLinks: MaterialLinkStore;
   /** Billing plan state (§5); present with Postgres, in-memory otherwise. */
   billing?: BillingStore;
 }
@@ -163,6 +169,12 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     pdf,
     billing,
     captureBaseUrl: cfg.captureBaseUrl,
+    // Material Intelligence (§4.3 add-on) — analyst runs + send-a-link flow.
+    materials: {
+      analyses: stores.materialAnalyses,
+      links: stores.materialLinks,
+      linkBaseUrl: cfg.appBaseUrl,
+    },
   };
 
   // §5.3 live monitoring — re-values watches and fires watch.changed.
@@ -262,6 +274,8 @@ async function buildStores(
     watches: new InMemoryWatchStore(),
     captures: new InMemoryCaptureSessionStore(),
     scopes: new InMemoryScopeStore(),
+    materialAnalyses: new InMemoryMaterialAnalysisStore(),
+    materialLinks: new InMemoryMaterialLinkStore(),
     billing: new InMemoryBillingStore(),
   };
   return { stores, storage: 'memory', dispose: async () => {} };
