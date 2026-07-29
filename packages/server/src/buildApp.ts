@@ -189,7 +189,7 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
 
   // Customer web app — thin shell over the API (same auth path, same gates).
   const webapp = cfg.sessionSecret
-    ? new WebApp({ api, sessionSecret: cfg.sessionSecret, secureCookies: cfg.nodeEnv === 'production' })
+    ? new WebApp({ api, sessionSecret: cfg.sessionSecret, secureCookies: cfg.secureCookies })
     : undefined;
 
   return {

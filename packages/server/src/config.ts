@@ -23,6 +23,12 @@ export interface ServerConfig {
 
   /** Web app session signing secret. Unset = web app disabled. */
   sessionSecret?: string;
+  /**
+   * Mark session cookies Secure (HTTPS-only). Default false: browsers drop
+   * Secure cookies on plain-HTTP origins, which breaks login until TLS is in
+   * front. Set SECURE_COOKIES=1 once the app is served over HTTPS.
+   */
+  secureCookies: boolean;
 
   /** Stripe billing (§5). All four set = billing routes enabled. */
   stripeSecretKey?: string;
@@ -74,6 +80,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     visionModel: strEnv(env.VISION_MODEL),
 
     sessionSecret: strEnv(env.SESSION_SECRET),
+    secureCookies: boolEnv(env.SECURE_COOKIES, false),
 
     stripeSecretKey: strEnv(env.STRIPE_SECRET_KEY),
     stripeWebhookSecret: strEnv(env.STRIPE_WEBHOOK_SECRET),
