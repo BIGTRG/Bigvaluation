@@ -1,0 +1,16 @@
+{
+  "name": "@bigvaluation/render",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "{{BRAND_NAME}} Render — dual-layer AI rendering connector (§4.4): renovation layer + furniture staging layer behind a swappable provider adapter.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

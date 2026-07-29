@@ -14,6 +14,7 @@ import {
   PgWatchStore,
   PgCaptureSessionStore,
   PgScopeStore,
+  PgBillingStore,
 } from './stores/pgApiStores.ts';
 
 export type { SqlClient, TransactionalSqlClient } from './sql.ts';
@@ -25,6 +26,7 @@ export {
   PgWatchStore,
   PgCaptureSessionStore,
   PgScopeStore,
+  PgBillingStore,
 } from './stores/pgApiStores.ts';
 export { migrate, migrationFiles } from './migrate.ts';
 
@@ -37,6 +39,7 @@ export interface PgStores {
   watches: PgWatchStore;
   captures: PgCaptureSessionStore;
   scopes: PgScopeStore;
+  billing: PgBillingStore;
 }
 
 export function createPgStores(db: SqlClient): PgStores {
@@ -47,5 +50,6 @@ export function createPgStores(db: SqlClient): PgStores {
     watches: new PgWatchStore(db),
     captures: new PgCaptureSessionStore(db),
     scopes: new PgScopeStore(db),
+    billing: new PgBillingStore(db),
   };
 }

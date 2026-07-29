@@ -24,8 +24,9 @@ export interface PipelineDeps {
   hub: PropertyDataHub;
   /** Condition scoring (§4.1). Defaults to input.conditionScore, else 3 (average). */
   vision?: (input: Record<string, unknown>, asOf: string) => Promise<number>;
-  /** Renders for a scope (§4.4). Optional; a failure only skips the images. */
-  render?: (valuation: Valuation, asOf: string) => Promise<unknown>;
+  /** Renders for a scope (§4.4). Optional; a failure only skips the images.
+   *  `input` is the job input (photos, materials) for providers that need it. */
+  render?: (valuation: Valuation, asOf: string, input?: Record<string, unknown>) => Promise<unknown>;
   /** Persist the report and return its URL (e.g. MinIO put → CDN url). */
   publish?: (jobId: string, html: string) => Promise<string>;
   /** Base report metadata; per-job overrides come from job.input.report. */
@@ -76,7 +77,7 @@ export function buildDefaultStages(deps: PipelineDeps): StageDefinition[] {
       required: false,
       handler: async (ctx) => {
         if (!deps.render) return {};
-        const renders = await deps.render(ctx.context.valuation as Valuation, ctx.asOf);
+        const renders = await deps.render(ctx.context.valuation as Valuation, ctx.asOf, ctx.input);
         return { renders };
       },
     },
@@ -94,6 +95,10 @@ export function buildDefaultStages(deps: PipelineDeps): StageDefinition[] {
           ...deps.reportDefaults,
           ...(ctx.input.report as Partial<ReportMeta> | undefined),
         };
+        // §4.4: renders produced by the visualize stage flow into the report.
+        if (!meta.renders && ctx.context.renders && typeof ctx.context.renders === 'object') {
+          meta.renders = ctx.context.renders as ReportMeta['renders'];
+        }
         const html = renderReport({
           valuation,
           comps: (data?.comps as never) ?? undefined,

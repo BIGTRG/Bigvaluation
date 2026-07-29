@@ -221,4 +221,48 @@ export class PgScopeStore implements ScopeStore {
   }
 }
 
+// --- Billing (§5) ------------------------------------------------------------
+
+import type { BillingStore, BillingAccount, BillingPlan } from '../../../billing/src/index.ts';
+
+const BILLING_UPSERT = `
+INSERT INTO billing_accounts (account_id, plan, stripe_customer_id, subscription_id, subscription_status, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (account_id) DO UPDATE SET
+  plan = EXCLUDED.plan,
+  stripe_customer_id = EXCLUDED.stripe_customer_id,
+  subscription_id = EXCLUDED.subscription_id,
+  subscription_status = EXCLUDED.subscription_status,
+  updated_at = EXCLUDED.updated_at`;
+
+export class PgBillingStore implements BillingStore {
+  private readonly db: SqlClient;
+  constructor(db: SqlClient) {
+    this.db = db;
+  }
+  async get(accountId: string): Promise<BillingAccount | null> {
+    const rows = await this.db.query('SELECT * FROM billing_accounts WHERE account_id = $1', [accountId]);
+    if (!rows.length) return null;
+    const r = rows[0];
+    return {
+      accountId: String(r.account_id),
+      plan: String(r.plan) as BillingPlan,
+      stripeCustomerId: r.stripe_customer_id == null ? undefined : String(r.stripe_customer_id),
+      subscriptionId: r.subscription_id == null ? undefined : String(r.subscription_id),
+      subscriptionStatus: r.subscription_status == null ? undefined : String(r.subscription_status),
+      updatedAt: toNumber(r.updated_at),
+    };
+  }
+  async save(a: BillingAccount): Promise<void> {
+    await this.db.query(BILLING_UPSERT, [
+      a.accountId,
+      a.plan,
+      a.stripeCustomerId ?? null,
+      a.subscriptionId ?? null,
+      a.subscriptionStatus ?? null,
+      a.updatedAt,
+    ]);
+  }
+}
+
 export { toNumberOrUndef };

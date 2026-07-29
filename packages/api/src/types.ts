@@ -15,6 +15,8 @@ export interface ApiRequest {
   query: Record<string, string>;
   /** Parsed JSON body (or undefined). */
   body?: unknown;
+  /** Raw request payload — required for webhook signature verification. */
+  rawBody?: string;
 }
 
 export interface ApiResponse {

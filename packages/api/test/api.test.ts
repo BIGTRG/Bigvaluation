@@ -205,3 +205,12 @@ test('report PDF returns 409 when no renderer, PDF bytes when configured', async
   const noPdf = await api.handle(req('GET', `/reports/${reportId}`, { key: KEY, query: { format: 'pdf' } }));
   assert.equal(noPdf.status, 409);
 });
+
+// --- Billing (§5) -------------------------------------------------------------
+
+test('billing routes return 409 when Stripe is not configured', async () => {
+  const { api } = makeApi();
+  const res = await api.handle(req('POST', '/billing/checkout', { key: KEY, body: { product: 'report' } }));
+  assert.equal(res.status, 409);
+  assert.equal((res.body as any).error, 'billing_unavailable');
+});

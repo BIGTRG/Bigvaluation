@@ -15,6 +15,8 @@ import type {
   PdfRenderer,
 } from './types.ts';
 import { requireAttestation, isAttestationError } from './compliance.ts';
+import type { BillingService } from '../../billing/src/index.ts';
+import { verifyStripeWebhook } from '../../billing/src/index.ts';
 import { TERMS_HTML, PRIVACY_HTML } from './legal.ts';
 import { Router } from './router.ts';
 import { Authenticator, hasScope } from './auth.ts';
@@ -32,6 +34,8 @@ export interface AppDeps {
   webhooks?: WebhookDispatcher;
   /** Optional PDF connector (§3 "branded PDF"); GET /reports/:id?format=pdf. */
   pdf?: PdfRenderer;
+  /** Optional Stripe billing (§5). Absent = billing routes return 409. */
+  billing?: { service: BillingService; webhookSecret: string };
   clock?: { now: () => number };
   idFactory?: () => string;
   /** Base URL for the tokenized mobile capture link (§4.1). */
@@ -77,6 +81,9 @@ export class Api {
     r.add({ id: 'captureSessions.create', method: 'POST', pattern: '/capture-sessions', scope: 'capture:write', handler: this.createCaptureSession });
     r.add({ id: 'scopeOfWork.create', method: 'POST', pattern: '/scope-of-work', scope: 'scope:write', handler: this.createScope });
     r.add({ id: 'webhooks.create', method: 'POST', pattern: '/webhooks', scope: 'webhooks:write', handler: this.registerWebhook });
+    r.add({ id: 'billing.checkout', method: 'POST', pattern: '/billing/checkout', scope: 'billing:write', handler: this.createCheckout });
+    r.add({ id: 'billing.account', method: 'GET', pattern: '/billing/account', scope: 'billing:read', handler: this.getBillingAccount });
+    r.add({ id: 'billing.webhook', method: 'POST', pattern: '/billing/webhook', public: true, handler: this.billingWebhook });
   }
 
   async handle(req: ApiRequest): Promise<ApiResponse> {
@@ -292,6 +299,49 @@ export class Api {
     await this.deps.scopes.save(scope);
     const total = lineItems.reduce((s, li) => s + li.costUsd, 0);
     return json(201, { id: scope.id, lineItems, totalUsd: total });
+  };
+
+  // --- Billing (§5) ---------------------------------------------------------
+
+  private createCheckout = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.billing) return json(409, { error: 'billing_unavailable', detail: 'Stripe is not configured on this deployment.' });
+    const body = asObject(ctx.req.body);
+    const product = body?.product;
+    try {
+      if (product === 'report') {
+        const quantity = Math.max(1, Math.trunc(Number(body?.quantity) || 1));
+        const session = await this.deps.billing.service.createReportCheckout(ctx.auth.accountId, quantity);
+        return json(201, { checkoutUrl: session.url, sessionId: session.id });
+      }
+      if (product === 'pro') {
+        const session = await this.deps.billing.service.createProCheckout(ctx.auth.accountId);
+        return json(201, { checkoutUrl: session.url, sessionId: session.id });
+      }
+    } catch (err) {
+      return json(502, { error: 'billing_error', detail: err instanceof Error ? err.message : String(err) });
+    }
+    return json(400, { error: 'invalid_request', detail: "product must be 'report' or 'pro' (partner plans are provisioned by contract)" });
+  };
+
+  private getBillingAccount = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.billing) return json(409, { error: 'billing_unavailable' });
+    const account = await this.deps.billing.service.getAccount(ctx.auth.accountId);
+    const usage = await this.deps.meter.total(ctx.auth.accountId);
+    return json(200, { ...account, usageUnits: usage });
+  };
+
+  private billingWebhook = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.billing) return json(409, { error: 'billing_unavailable' });
+    const signature = ctx.req.headers['stripe-signature'];
+    if (!signature || !ctx.req.rawBody) return json(400, { error: 'invalid_request', detail: 'missing signature or payload' });
+    let event: Record<string, unknown>;
+    try {
+      event = verifyStripeWebhook(ctx.req.rawBody, signature, this.deps.billing.webhookSecret, { now: () => ctx.now });
+    } catch (err) {
+      return json(400, { error: 'invalid_signature', detail: err instanceof Error ? err.message : String(err) });
+    }
+    const outcome = await this.deps.billing.service.handleEvent(event);
+    return json(200, { received: true, ...outcome });
   };
 
   private registerWebhook = async (ctx: HandlerCtx): Promise<ApiResponse> => {

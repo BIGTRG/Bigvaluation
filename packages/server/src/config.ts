@@ -21,6 +21,18 @@ export interface ServerConfig {
   /** Claude model for vision scoring. Default: claude-sonnet-4-20250514. */
   visionModel?: string;
 
+  /** Stripe billing (§5). All four set = billing routes enabled. */
+  stripeSecretKey?: string;
+  stripeWebhookSecret?: string;
+  stripePriceReport?: string;
+  stripePriceProMonthly?: string;
+  /** Where Checkout returns the buyer (web app base URL). */
+  billingReturnUrl: string;
+
+  /** Render/staging vendor (§4.4). Both set = renders enabled. */
+  renderApiUrl?: string;
+  renderApiKey?: string;
+
   /** Gotenberg base URL for PDF reports (§3). Unset = PDF disabled. */
   gotenbergUrl?: string;
 
@@ -57,6 +69,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
 
     anthropicApiKey: strEnv(env.ANTHROPIC_API_KEY),
     visionModel: strEnv(env.VISION_MODEL),
+
+    stripeSecretKey: strEnv(env.STRIPE_SECRET_KEY),
+    stripeWebhookSecret: strEnv(env.STRIPE_WEBHOOK_SECRET),
+    stripePriceReport: strEnv(env.STRIPE_PRICE_REPORT),
+    stripePriceProMonthly: strEnv(env.STRIPE_PRICE_PRO_MONTHLY),
+    billingReturnUrl: strEnv(env.BILLING_RETURN_URL) ?? 'https://{{BRAND_DOMAIN}}/billing',
+
+    renderApiUrl: strEnv(env.RENDER_API_URL),
+    renderApiKey: strEnv(env.RENDER_API_KEY),
 
     gotenbergUrl: strEnv(env.GOTENBERG_URL),
 

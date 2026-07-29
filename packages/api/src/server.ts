@@ -34,6 +34,7 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
   }
 
   let body: unknown;
+  let rawBody: string | undefined;
   if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
     const raw = await readBody(req);
     if (raw === null) {
@@ -41,6 +42,7 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
       return;
     }
     if (raw.length > 0) {
+      rawBody = raw;
       try {
         body = JSON.parse(raw);
       } catch {
@@ -50,7 +52,7 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
     }
   }
 
-  const apiReq: ApiRequest = { method, path: url.pathname, headers, query, body };
+  const apiReq: ApiRequest = { method, path: url.pathname, headers, query, body, rawBody };
   const response = await api.handle(apiReq);
 
   const ct = response.headers?.['content-type'] ?? 'application/json; charset=utf-8';

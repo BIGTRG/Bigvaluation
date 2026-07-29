@@ -16,8 +16,8 @@ test('migrationFiles returns ordered SQL with the schema', () => {
 test('migrate applies each file against the client', async () => {
   const db = new FakeSqlClient();
   const applied = await migrate(db);
-  assert.deepEqual(applied, ['0001_init.sql', '0002_compliance_monitoring.sql']);
-  assert.equal(db.calls.length, 2);
+  assert.deepEqual(applied, ['0001_init.sql', '0002_compliance_monitoring.sql', '0003_billing.sql']);
+  assert.equal(db.calls.length, 3);
   assert.match(db.calls[0].text, /CREATE TABLE IF NOT EXISTS accounts/);
   assert.match(db.calls[1].text, /attestation/);
 });

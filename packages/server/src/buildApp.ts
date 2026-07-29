@@ -48,6 +48,10 @@ import { ConditionScorer } from '../../vision/src/index.ts';
 import { WatchMonitor } from '../../api/src/index.ts';
 import type { Watch, PdfRenderer } from '../../api/src/index.ts';
 import { GotenbergPdfRenderer } from './pdf.ts';
+import { RenderService, HttpRenderProvider, toReportRenders } from '../../render/src/index.ts';
+import { StripeClient, BillingService, InMemoryBillingStore } from '../../billing/src/index.ts';
+import type { BillingStore } from '../../billing/src/index.ts';
+import type { RenderTier } from '../../render/src/index.ts';
 
 export interface StoresBundle {
   jobStore: JobStore;
@@ -56,6 +60,8 @@ export interface StoresBundle {
   watches: WatchStore;
   captures: CaptureSessionStore;
   scopes: ScopeStore;
+  /** Billing plan state (§5); present with Postgres, in-memory otherwise. */
+  billing?: BillingStore;
 }
 
 export interface BuiltApp {
@@ -66,7 +72,7 @@ export interface BuiltApp {
   stores: StoresBundle;
   /** Live valuation monitoring (§5.3); main.ts runs it on WATCH_INTERVAL_MS. */
   monitor: WatchMonitor;
-  mode: { storage: 'postgres' | 'memory'; data: 'live' | 'mock'; pdf: 'gotenberg' | 'off' };
+  mode: { storage: 'postgres' | 'memory'; data: 'live' | 'mock'; pdf: 'gotenberg' | 'off'; render: 'http' | 'off'; billing: 'stripe' | 'off' };
   dispose: () => Promise<void>;
 }
 
@@ -90,14 +96,52 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
           model: cfg.visionModel,
         }).visionHandler()
       : undefined,
-    // §4.4 Renders: real impl calls a render/staging API.
-    render: undefined,
+    // §4.4 Renders: dual-layer (renovate + stage) via the swappable connector.
+    // Enabled when RENDER_API_URL + RENDER_API_KEY are set and the job carries
+    // captured photos; desk valuations skip it (visualize is best-effort).
+    render: cfg.renderApiUrl && cfg.renderApiKey
+      ? (() => {
+          const service = new RenderService({
+            provider: new HttpRenderProvider({ baseUrl: cfg.renderApiUrl, apiKey: cfg.renderApiKey }),
+            log: (msg) => console.warn(`[render] ${msg}`),
+          });
+          return async (_valuation: unknown, _asOf: string, input?: Record<string, unknown>) => {
+            const photos = Array.isArray(input?.photos)
+              ? (input.photos as { room: string; url: string }[]).filter((p) => p?.room && p?.url)
+              : [];
+            if (photos.length === 0) return {};
+            const tier = (typeof input?.renderTier === 'string' ? input.renderTier : 'medium') as RenderTier;
+            const materials = Array.isArray(input?.materials)
+              ? (input.materials as { label: string }[])
+              : undefined;
+            const rooms = await service.renderAll({ photos, tier, materials });
+            return toReportRenders(rooms, tier);
+          };
+        })()
+      : undefined,
     // §4.x Publish: persist the report and return its URL. HTML is already
     // stored in the job (context.reportHtml); this yields a canonical link.
     publish: async (jobId) => `${cfg.reportsBaseUrl}/${jobId}.html`,
   });
 
   const orchestrator = new Orchestrator({ store: stores.jobStore, events, stages });
+
+  // §5 Stripe billing — optional; routes 409 until keys + prices are set.
+  const billingConfigured =
+    cfg.stripeSecretKey && cfg.stripeWebhookSecret && cfg.stripePriceReport && cfg.stripePriceProMonthly;
+  const billing = billingConfigured
+    ? {
+        service: new BillingService({
+          stripe: new StripeClient({ secretKey: cfg.stripeSecretKey! }),
+          store: stores.billing ?? new InMemoryBillingStore(),
+          prices: { report: cfg.stripePriceReport!, proMonthly: cfg.stripePriceProMonthly! },
+          successUrl: `${cfg.billingReturnUrl}/success`,
+          cancelUrl: `${cfg.billingReturnUrl}/cancel`,
+          log: (msg) => console.log(`[billing] ${msg}`),
+        }),
+        webhookSecret: cfg.stripeWebhookSecret!,
+      }
+    : undefined;
 
   // §3 branded PDF — optional Gotenberg connector.
   const pdf: PdfRenderer | undefined = cfg.gotenbergUrl
@@ -114,6 +158,7 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     scopes: stores.scopes,
     webhooks,
     pdf,
+    billing,
     captureBaseUrl: cfg.captureBaseUrl,
   };
 
@@ -144,7 +189,7 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     webhooks,
     stores,
     monitor,
-    mode: { storage, data, pdf: pdf ? 'gotenberg' : 'off' },
+    mode: { storage, data, pdf: pdf ? 'gotenberg' : 'off', render: cfg.renderApiUrl && cfg.renderApiKey ? 'http' : 'off', billing: billing ? 'stripe' : 'off' },
     dispose,
   };
 }
@@ -206,6 +251,7 @@ async function buildStores(
     watches: new InMemoryWatchStore(),
     captures: new InMemoryCaptureSessionStore(),
     scopes: new InMemoryScopeStore(),
+    billing: new InMemoryBillingStore(),
   };
   return { stores, storage: 'memory', dispose: async () => {} };
 }
