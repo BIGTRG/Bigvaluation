@@ -24,6 +24,7 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
       REPORTS_BASE_URL: http://178.105.21.227:8103/reports
       CAPTURE_BASE_URL: http://178.105.21.227:8103/capture
+      APP_BASE_URL: http://178.105.21.227:8103
       GOTENBERG_URL: http://gotenberg:3000
       WATCH_INTERVAL_MS: "86400000"
       WATCH_CHANGE_THRESHOLD: "0.02"
