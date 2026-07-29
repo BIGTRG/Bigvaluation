@@ -11,6 +11,8 @@ export interface JobStore {
   save(job: Job): Promise<void>;
   get(id: string): Promise<Job | null>;
   list(): Promise<Job[]>;
+  /** Jobs owned by one account, newest first (dashboard/list endpoints). */
+  listByAccount(accountId: string, limit?: number): Promise<Job[]>;
 }
 
 export class InMemoryJobStore implements JobStore {
@@ -26,6 +28,13 @@ export class InMemoryJobStore implements JobStore {
   }
   async list(): Promise<Job[]> {
     return [...this.jobs.values()].map((j) => structuredClone(j));
+  }
+  async listByAccount(accountId: string, limit = 50): Promise<Job[]> {
+    return [...this.jobs.values()]
+      .filter((j) => (j.input as { accountId?: unknown }).accountId === accountId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit)
+      .map((j) => structuredClone(j));
   }
 }
 

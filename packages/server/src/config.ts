@@ -21,6 +21,9 @@ export interface ServerConfig {
   /** Claude model for vision scoring. Default: claude-sonnet-4-20250514. */
   visionModel?: string;
 
+  /** Web app session signing secret. Unset = web app disabled. */
+  sessionSecret?: string;
+
   /** Stripe billing (§5). All four set = billing routes enabled. */
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
@@ -69,6 +72,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
 
     anthropicApiKey: strEnv(env.ANTHROPIC_API_KEY),
     visionModel: strEnv(env.VISION_MODEL),
+
+    sessionSecret: strEnv(env.SESSION_SECRET),
 
     stripeSecretKey: strEnv(env.STRIPE_SECRET_KEY),
     stripeWebhookSecret: strEnv(env.STRIPE_WEBHOOK_SECRET),

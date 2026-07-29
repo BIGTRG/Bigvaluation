@@ -75,9 +75,11 @@ export class Api {
     r.add({ id: 'legal.terms', method: 'GET', pattern: '/legal/terms', public: true, handler: async () => html(TERMS_HTML) });
     r.add({ id: 'legal.privacy', method: 'GET', pattern: '/legal/privacy', public: true, handler: async () => html(PRIVACY_HTML) });
     r.add({ id: 'valuations.create', method: 'POST', pattern: '/valuations', scope: 'valuations:write', billable: true, handler: this.createValuation });
+    r.add({ id: 'valuations.list', method: 'GET', pattern: '/valuations', scope: 'valuations:read', handler: this.listValuations });
     r.add({ id: 'valuations.get', method: 'GET', pattern: '/valuations/:id', scope: 'valuations:read', handler: this.getValuation });
     r.add({ id: 'reports.get', method: 'GET', pattern: '/reports/:id', scope: 'reports:read', handler: this.getReport });
     r.add({ id: 'watches.create', method: 'POST', pattern: '/watches', scope: 'watches:write', handler: this.createWatch });
+    r.add({ id: 'watches.list', method: 'GET', pattern: '/watches', scope: 'watches:read', handler: this.listWatches });
     r.add({ id: 'captureSessions.create', method: 'POST', pattern: '/capture-sessions', scope: 'capture:write', handler: this.createCaptureSession });
     r.add({ id: 'scopeOfWork.create', method: 'POST', pattern: '/scope-of-work', scope: 'scope:write', handler: this.createScope });
     r.add({ id: 'webhooks.create', method: 'POST', pattern: '/webhooks', scope: 'webhooks:write', handler: this.registerWebhook });
@@ -146,6 +148,12 @@ export class Api {
     const final = await this.deps.orchestrator.runJob(job.id);
     const status = final.status === 'failed' ? 422 : 201;
     return json(status, valuationSummary(final));
+  };
+
+  private listValuations = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    const limit = Math.min(200, Math.max(1, Math.trunc(Number(ctx.req.query.limit) || 50)));
+    const jobs = await this.deps.jobStore.listByAccount(ctx.auth.accountId, limit);
+    return json(200, { valuations: jobs.map(valuationSummary) });
   };
 
   private getValuation = async (ctx: HandlerCtx): Promise<ApiResponse> => {
@@ -299,6 +307,11 @@ export class Api {
     await this.deps.scopes.save(scope);
     const total = lineItems.reduce((s, li) => s + li.costUsd, 0);
     return json(201, { id: scope.id, lineItems, totalUsd: total });
+  };
+
+  private listWatches = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    const watches = await this.deps.watches.listByAccount(ctx.auth.accountId);
+    return json(200, { watches });
   };
 
   // --- Billing (§5) ---------------------------------------------------------

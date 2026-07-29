@@ -53,6 +53,7 @@ services:
       DATABASE_URL: postgres://flip:flip@db:5432/flipmaster
       MIGRATE_ON_BOOT: "1"
       SEED_API_KEY: fmk_demo.secret123
+      SESSION_SECRET: dev-only-session-secret-rotate-me
       REPORTS_BASE_URL: http://localhost:8787/reports
       CAPTURE_BASE_URL: http://localhost:8787/capture
       GOTENBERG_URL: http://gotenberg:3000

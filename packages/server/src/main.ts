@@ -11,7 +11,9 @@ import { buildApp } from './buildApp.ts';
 async function main(): Promise<void> {
   const cfg = loadConfig();
   const app = await buildApp(cfg);
-  const server = createHttpServer(app.api);
+  const server = createHttpServer(app.api, {
+    mounts: app.webapp ? [{ prefix: '/app', handler: app.webapp }] : [],
+  });
 
   // §5.3 live valuation monitoring — sweep watches on a fixed cadence.
   let monitorTimer: NodeJS.Timeout | undefined;

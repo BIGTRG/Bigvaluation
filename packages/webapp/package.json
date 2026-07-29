@@ -1,0 +1,16 @@
+{
+  "name": "@bigvaluation/webapp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "{{BRAND_NAME}} Web App — customer-facing dashboard: order valuations (attestation-gated), view reports, manage watches and billing. Server-rendered, framework-free, custom design.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

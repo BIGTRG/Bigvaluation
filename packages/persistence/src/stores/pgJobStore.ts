@@ -52,6 +52,14 @@ export class PgJobStore implements JobStore {
     const rows = await this.db.query('SELECT * FROM jobs ORDER BY created_at ASC');
     return rows.map(rowToJob);
   }
+
+  async listByAccount(accountId: string, limit = 50): Promise<Job[]> {
+    const rows = await this.db.query(
+      'SELECT * FROM jobs WHERE account_id = $1 ORDER BY created_at DESC LIMIT $2',
+      [accountId, limit],
+    );
+    return rows.map(rowToJob);
+  }
 }
 
 export function rowToJob(row: Record<string, unknown>): Job {

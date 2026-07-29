@@ -7,19 +7,29 @@
 
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from 'node:http';
 import type { Api } from './app.ts';
-import type { ApiRequest, Method } from './types.ts';
+import type { ApiRequest, ApiResponse, Method } from './types.ts';
 
 const MAX_BODY_BYTES = 1_000_000; // 1 MB cap — reject oversized payloads
 
-export function createHttpServer(api: Api): Server {
+/** Anything that turns an ApiRequest into an ApiResponse (e.g. the web app). */
+export interface RequestHandler {
+  handle(req: ApiRequest): Promise<ApiResponse>;
+}
+
+export interface HttpServerOptions {
+  /** Optional sub-handlers by path prefix, checked before the API. */
+  mounts?: { prefix: string; handler: RequestHandler }[];
+}
+
+export function createHttpServer(api: Api, opts: HttpServerOptions = {}): Server {
   return createServer((req, res) => {
-    handleNodeRequest(api, req, res).catch((err) => {
+    handleNodeRequest(api, req, res, opts).catch((err) => {
       writeJson(res, 500, { error: 'internal_error', detail: String(err) });
     });
   });
 }
 
-async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResponse): Promise<void> {
+async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResponse, opts: HttpServerOptions = {}): Promise<void> {
   const method = (req.method ?? 'GET').toUpperCase() as Method;
   const url = new URL(req.url ?? '/', 'http://localhost');
   const query: Record<string, string> = {};
@@ -43,17 +53,24 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
     }
     if (raw.length > 0) {
       rawBody = raw;
-      try {
-        body = JSON.parse(raw);
-      } catch {
-        writeJson(res, 400, { error: 'invalid_json' });
-        return;
+      const ct = headers['content-type'] ?? '';
+      if (ct.includes('application/json')) {
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          writeJson(res, 400, { error: 'invalid_json' });
+          return;
+        }
       }
+      // Non-JSON payloads (forms, webhooks) are handled from rawBody.
     }
   }
 
   const apiReq: ApiRequest = { method, path: url.pathname, headers, query, body, rawBody };
-  const response = await api.handle(apiReq);
+  const mount = opts.mounts?.find(
+    (m) => url.pathname === m.prefix || url.pathname.startsWith(`${m.prefix}/`),
+  );
+  const response = mount ? await mount.handler.handle(apiReq) : await api.handle(apiReq);
 
   const ct = response.headers?.['content-type'] ?? 'application/json; charset=utf-8';
   const payload =

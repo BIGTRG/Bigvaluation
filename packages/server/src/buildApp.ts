@@ -50,6 +50,7 @@ import type { Watch, PdfRenderer } from '../../api/src/index.ts';
 import { GotenbergPdfRenderer } from './pdf.ts';
 import { RenderService, HttpRenderProvider, toReportRenders } from '../../render/src/index.ts';
 import { StripeClient, BillingService, InMemoryBillingStore } from '../../billing/src/index.ts';
+import { WebApp } from '../../webapp/src/index.ts';
 import type { BillingStore } from '../../billing/src/index.ts';
 import type { RenderTier } from '../../render/src/index.ts';
 
@@ -72,7 +73,9 @@ export interface BuiltApp {
   stores: StoresBundle;
   /** Live valuation monitoring (§5.3); main.ts runs it on WATCH_INTERVAL_MS. */
   monitor: WatchMonitor;
-  mode: { storage: 'postgres' | 'memory'; data: 'live' | 'mock'; pdf: 'gotenberg' | 'off'; render: 'http' | 'off'; billing: 'stripe' | 'off' };
+  /** Customer dashboard; mounted at /app when SESSION_SECRET is set. */
+  webapp?: WebApp;
+  mode: { storage: 'postgres' | 'memory'; data: 'live' | 'mock'; pdf: 'gotenberg' | 'off'; render: 'http' | 'off'; billing: 'stripe' | 'off'; webapp: 'on' | 'off' };
   dispose: () => Promise<void>;
 }
 
@@ -182,14 +185,22 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     log: (msg) => console.warn(`[watch-monitor] ${msg}`),
   });
 
+  const api = new Api(deps);
+
+  // Customer web app — thin shell over the API (same auth path, same gates).
+  const webapp = cfg.sessionSecret
+    ? new WebApp({ api, sessionSecret: cfg.sessionSecret, secureCookies: cfg.nodeEnv === 'production' })
+    : undefined;
+
   return {
-    api: new Api(deps),
+    api,
     orchestrator,
     events,
     webhooks,
     stores,
     monitor,
-    mode: { storage, data, pdf: pdf ? 'gotenberg' : 'off', render: cfg.renderApiUrl && cfg.renderApiKey ? 'http' : 'off', billing: billing ? 'stripe' : 'off' },
+    webapp,
+    mode: { storage, data, pdf: pdf ? 'gotenberg' : 'off', render: cfg.renderApiUrl && cfg.renderApiKey ? 'http' : 'off', billing: billing ? 'stripe' : 'off', webapp: webapp ? 'on' : 'off' },
     dispose,
   };
 }
