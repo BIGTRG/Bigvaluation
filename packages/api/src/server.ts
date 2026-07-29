@@ -21,6 +21,8 @@ export interface HttpServerOptions {
   mounts?: { prefix: string; handler: RequestHandler }[];
   /** Where a browser landing on `/` is sent (e.g. the web app sign-in). */
   rootRedirect?: string;
+  /** Static HTML served at the exact root path `/` (takes precedence over rootRedirect). */
+  rootHtml?: string;
 }
 
 export function createHttpServer(api: Api, opts: HttpServerOptions = {}): Server {
@@ -69,6 +71,11 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
   }
 
   const apiReq: ApiRequest = { method, path: url.pathname, headers, query, body, rawBody };
+  if (url.pathname === '/' && opts.rootHtml && method === 'GET') {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end(opts.rootHtml);
+    return;
+  }
   if (url.pathname === '/' && opts.rootRedirect) {
     res.writeHead(302, { location: opts.rootRedirect });
     res.end();

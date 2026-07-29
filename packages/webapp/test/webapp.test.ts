@@ -145,3 +145,17 @@ test('every page carries the compliance footer', async () => {
     assert.match(res.body as string, /Business-purpose, non-owner-occupied use only/, path);
   }
 });
+
+test('marketing page: retail front end sells reports, Pro, and the API with compliance language', async () => {
+  const { marketingPage } = await import('../src/marketing.ts');
+  const html = marketingPage();
+  assert.match(html, /ValueProof/);
+  assert.match(html, /Run your first report/);
+  assert.match(html, /Pay-as-you-go/);
+  assert.match(html, /Pro Member/);
+  assert.match(html, /API Partner/);
+  assert.match(html, /POST \/valuations/);
+  assert.match(html, /not licensed appraisals/i);
+  assert.match(html, /Business-purpose, non-owner-occupied use only/);
+  assert.match(html, /href="\/app\/login"/);
+});
