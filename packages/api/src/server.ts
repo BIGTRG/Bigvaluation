@@ -23,6 +23,8 @@ export interface HttpServerOptions {
   rootRedirect?: string;
   /** Static HTML served at the exact root path `/` (takes precedence over rootRedirect). */
   rootHtml?: string;
+  /** Static public pages by exact path (marketing site). Checked before mounts/API. */
+  publicPages?: Record<string, string>;
 }
 
 export function createHttpServer(api: Api, opts: HttpServerOptions = {}): Server {
@@ -71,6 +73,12 @@ async function handleNodeRequest(api: Api, req: IncomingMessage, res: ServerResp
   }
 
   const apiReq: ApiRequest = { method, path: url.pathname, headers, query, body, rawBody };
+  const staticPage = method === 'GET' ? opts.publicPages?.[url.pathname] : undefined;
+  if (staticPage) {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end(staticPage);
+    return;
+  }
   if (url.pathname === '/' && opts.rootHtml && method === 'GET') {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
     res.end(opts.rootHtml);

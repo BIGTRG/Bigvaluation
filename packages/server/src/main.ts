@@ -7,14 +7,14 @@
 import { createHttpServer } from '../../api/src/index.ts';
 import { loadConfig } from './config.ts';
 import { buildApp } from './buildApp.ts';
-import { marketingPage } from '../../webapp/src/marketing.ts';
+import { marketingPages } from '../../webapp/src/marketing.ts';
 
 async function main(): Promise<void> {
   const cfg = loadConfig();
   const app = await buildApp(cfg);
   const server = createHttpServer(app.api, {
     mounts: app.webapp ? [{ prefix: '/app', handler: app.webapp }] : [],
-    rootHtml: marketingPage(),
+    publicPages: marketingPages(),
     rootRedirect: app.webapp ? '/app' : undefined,
   });
 

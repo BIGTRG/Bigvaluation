@@ -146,16 +146,25 @@ test('every page carries the compliance footer', async () => {
   }
 });
 
-test('marketing page: retail front end sells reports, Pro, and the API with compliance language', async () => {
-  const { marketingPage } = await import('../src/marketing.ts');
-  const html = marketingPage();
-  assert.match(html, /ValueProof/);
-  assert.match(html, /Run your first report/);
-  assert.match(html, /Pay-as-you-go/);
-  assert.match(html, /Pro Member/);
-  assert.match(html, /API Partner/);
-  assert.match(html, /POST \/valuations/);
-  assert.match(html, /not licensed appraisals/i);
-  assert.match(html, /Business-purpose, non-owner-occupied use only/);
-  assert.match(html, /href="\/app\/login"/);
+test('marketing site: each section is its own page, all branded and compliant', async () => {
+  const { marketingPages, marketingPage } = await import('../src/marketing.ts');
+  const pages = marketingPages();
+  assert.deepEqual(Object.keys(pages).sort(), ['/', '/api', '/how-it-works', '/material-intelligence', '/pricing']);
+  // every page: brand, footer compliance, sign-in link
+  for (const [path, html] of Object.entries(pages)) {
+    assert.match(html, /ValueProof/, path);
+    assert.match(html, /not licensed appraisals/i, path);
+    assert.match(html, /href="\/app\/login"/, path);
+  }
+  const home = marketingPage();
+  assert.equal(home, pages['/']);
+  assert.match(home, /Run your first report/);
+  assert.match(home, /Business-purpose, non-owner-occupied use only/);
+  assert.match(pages['/pricing'], /Pay-as-you-go/);
+  assert.match(pages['/pricing'], /Pro Member/);
+  assert.match(pages['/pricing'], /API Partner/);
+  assert.match(pages['/api'], /POST \/valuations/);
+  // nav points at real routes, not anchors
+  assert.match(home, /href="\/how-it-works"/);
+  assert.doesNotMatch(home, /href="#/);
 });

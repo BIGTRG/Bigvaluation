@@ -110,31 +110,37 @@ footer a { color: #B9C2CE; }
 }
 `;
 
-export function marketingPage(): string {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ValueProof — As-Is value + ARV in three rehab tiers, in minutes</title>
-${FAVICON_LINK}
-<meta name="description" content="AI property valuations for real-estate investors and private lenders: As-Is value plus after-repair value across Light, Medium, and High rehab scopes, grounded in comps, with a lender-ready PDF. Business-purpose use only.">
-<style>${CSS}</style>
-</head>
-<body>
+interface MarketingPageDef {
+  path: string;
+  title: string;
+  description: string;
+  nav: string | null;
+  content: string;
+}
 
-<div class="topbar"><div class="wrap">
+function navBar(active: string | null): string {
+  const link = (href: string, label: string) =>
+    `<a href="${href}"${active === href ? ' style="color:#fff;border-bottom:2px solid ' + GOLD + ';padding-bottom:2px"' : ''}>${label}</a>`;
+  return `<div class="topbar"><div class="wrap">
   <a class="wordmark" href="/"><span class="logo-chip">${VMARK_SVG}</span>Value<b>Proof</b>.</a>
   <nav class="topnav">
-    <a href="#how">How it works</a>
-    <a href="#material">Material Intelligence</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#api">API</a>
+    ${link('/how-it-works', 'How it works')}
+    ${link('/material-intelligence', 'Material Intelligence')}
+    ${link('/pricing', 'Pricing')}
+    ${link('/api', 'API')}
   </nav>
   <a class="btn btn-line" href="/app/login">Sign in</a>
-</div></div>
+</div></div>`;
+}
 
-<div class="hero"><div class="wrap">
+const FOOTER = `<footer><div class="wrap">
+  <div>ValueProof · valueproof.net · <a href="/app/login">Sign in</a> · <a href="/legal/terms">Terms</a> · <a href="/legal/privacy">Privacy</a></div>
+  <div class="disclaimer">Automated valuations are estimates, not licensed appraisals, and are provided
+  for business-purpose, non-owner-occupied real-estate transactions only. Every value traces back to the
+  comparable sales, data sources, and method used. ValueProof is a product of Flip Master Lending.</div>
+</div></footer>`;
+
+const HERO = `<div class="hero"><div class="wrap">
   <div>
     <div class="kicker">For investors &amp; private lenders</div>
     <h1>Know what it's worth now — and after the rehab.</h1>
@@ -143,7 +149,7 @@ ${FAVICON_LINK}
     with confidence you can defend and a lender-ready PDF. Minutes, not days.</p>
     <div class="ctas">
       <a class="btn btn-gold" href="/app/login">Run your first report</a>
-      <a class="btn btn-line" href="#api">License the API</a>
+      <a class="btn btn-line" href="/api">License the API</a>
     </div>
     <p class="fine">Automated estimates, not licensed appraisals · Business-purpose, non-owner-occupied use only</p>
   </div>
@@ -161,9 +167,9 @@ ${FAVICON_LINK}
     </div>
     <div class="foot">Every value traces to its comps, radius, and method — shown in the report.</div>
   </div>
-</div></div>
+</div></div>`;
 
-<section id="how"><div class="wrap">
+const HOW = `<section id="how"><div class="wrap">
   <div class="sec-kicker">The 60-second story</div>
   <h2>One address in. A lender-ready report out.</h2>
   <p class="lead">Two decision-grade numbers — what the property is worth today, and what
@@ -180,9 +186,9 @@ ${FAVICON_LINK}
       <p>A branded PDF with As-Is, three ARVs, comps, deal math, rental value, and a
       plain-language method note — a number you can defend to a lender.</p></div>
   </div>
-</div></section>
+</div></section>`;
 
-<section class="alt" id="material"><div class="wrap">
+const MATERIAL = `<section class="alt" id="material"><div class="wrap">
   <div class="sec-kicker">Material Intelligence</div>
   <h2>The ARV for the exact materials you're buying.</h2>
   <p class="lead">Generic tiers are the starting point. Submit the real scope of work — build
@@ -199,9 +205,9 @@ ${FAVICON_LINK}
       <p>Send the scope form to a borrower or contractor. They fill in materials;
       they never see your values.</p></div>
   </div>
-</div></section>
+</div></section>`;
 
-<section id="pricing"><div class="wrap">
+const PRICING = `<section id="pricing"><div class="wrap">
   <div class="sec-kicker">Pricing</div>
   <h2>Pay per report, go Pro, or license the engine.</h2>
   <p class="lead">The same engine serves an occasional deal, an active desk, and an entire platform.</p>
@@ -244,9 +250,9 @@ ${FAVICON_LINK}
       <a class="btn btn-green" href="mailto:admin@trgtechlink.com?subject=ValueProof%20API%20licensing">Talk to us</a>
     </div>
   </div>
-</div></section>
+</div></section>`;
 
-<section class="api-band" id="api"><div class="wrap">
+const API_BAND = `<section class="api-band" id="api"><div class="wrap">
   <div class="kicker">Enterprise</div>
   <h2>The same engine, behind your product.</h2>
   <p class="lead">Everything in the app is a REST call: valuations, material analyses,
@@ -258,15 +264,100 @@ POST /watches               <span class="g"># live re-valuation + change alerts<
 GET  /reports/{id}          <span class="g"># branded PDF / web report</span>
 webhooks: valuation.completed · watch.changed · report.ready</code>
   <a class="btn btn-gold" href="mailto:admin@trgtechlink.com?subject=ValueProof%20API%20licensing">Request API access</a>
-</div></section>
+</div></section>`;
 
-<footer><div class="wrap">
-  <div>ValueProof · valueproof.net · <a href="/app/login">Sign in</a> · <a href="/legal/terms">Terms</a> · <a href="/legal/privacy">Privacy</a></div>
-  <div class="disclaimer">Automated valuations are estimates, not licensed appraisals, and are provided
-  for business-purpose, non-owner-occupied real-estate transactions only. Every value traces back to the
-  comparable sales, data sources, and method used. ValueProof is a product of Flip Master Lending.</div>
-</div></footer>
+/** Standalone page header for the section pages (non-home). */
+function pageHero(kicker: string, title: string, sub: string): string {
+  return `<div class="hero" style="padding:44px 0 30px"><div class="wrap" style="grid-template-columns:1fr">
+  <div>
+    <div class="kicker">${kicker}</div>
+    <h1 style="font-size:38px">${title}</h1>
+    <p class="sub">${sub}</p>
+  </div>
+</div></div>`;
+}
 
+function shell(def: { title: string; description: string; nav: string | null; content: string }): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${def.title}</title>
+${FAVICON_LINK}
+<meta name="description" content="${def.description}">
+<style>${CSS}</style>
+</head>
+<body>
+${navBar(def.nav)}
+${def.content}
+${FOOTER}
 </body>
 </html>`;
+}
+
+/** Every public marketing page, keyed by path. Each section is its own page. */
+export function marketingPages(): Record<string, string> {
+  return {
+    '/': shell({
+      title: 'ValueProof — As-Is value + ARV in three rehab tiers, in minutes',
+      description:
+        'AI property valuations for real-estate investors and private lenders: As-Is value plus after-repair value across Light, Medium, and High rehab scopes, grounded in comps, with a lender-ready PDF. Business-purpose use only.',
+      nav: null,
+      content: HERO + HOW,
+    }),
+    '/how-it-works': shell({
+      title: 'How it works — ValueProof',
+      description:
+        'How ValueProof turns one address into an As-Is value and three after-repair values grounded in comparable sales, in about a minute.',
+      nav: '/how-it-works',
+      content:
+        pageHero(
+          'How it works',
+          'One address in. A lender-ready report out.',
+          'What happens between typing an address and holding a defensible number.',
+        ) + HOW + API_BAND,
+    }),
+    '/material-intelligence': shell({
+      title: 'Material Intelligence — ValueProof',
+      description:
+        'Submit the real scope of work and get the ARV for the exact materials being installed, with analyst-grade written reasoning.',
+      nav: '/material-intelligence',
+      content:
+        pageHero(
+          'Material Intelligence',
+          "The ARV for the exact materials you're buying.",
+          'Beyond generic tiers: a true finish-level read from the actual scope of work.',
+        ) + MATERIAL + PRICING,
+    }),
+    '/pricing': shell({
+      title: 'Pricing — ValueProof',
+      description:
+        'Pay per report, go Pro for discounted usage and live monitoring, or license the engine as an API partner.',
+      nav: '/pricing',
+      content:
+        pageHero(
+          'Pricing',
+          'Pay per report, go Pro, or license the engine.',
+          'The same engine serves an occasional deal, an active desk, and an entire platform.',
+        ) + PRICING + API_BAND,
+    }),
+    '/api': shell({
+      title: 'API licensing — ValueProof',
+      description:
+        'License the ValueProof valuation engine: REST API for valuations, material analyses, watches, reports, and webhooks. White-label ready.',
+      nav: '/api',
+      content:
+        pageHero(
+          'Enterprise API',
+          'The same engine, behind your product.',
+          'Everything in the app is a REST call — put decision-grade valuations inside your platform.',
+        ) + API_BAND + HOW,
+    }),
+  };
+}
+
+/** The home page (kept for compatibility with existing wiring). */
+export function marketingPage(): string {
+  return marketingPages()['/'];
 }
