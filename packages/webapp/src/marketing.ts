@@ -250,6 +250,22 @@ const PRICING = `<section id="pricing"><div class="wrap">
       <a class="btn btn-green" href="mailto:admin@trgtechlink.com?subject=ValueProof%20API%20licensing">Talk to us</a>
     </div>
   </div>
+  <div class="sec-kicker" style="margin-top:38px">Add-ons</div>
+  <h2 style="font-size:26px">Power features, priced a la carte.</h2>
+  <div class="grid3">
+    <div class="feat"><h3>Live monitoring — $19/mo per property</h3>
+      <p>Park any address on watch: the value re-checks automatically and alerts you the moment it moves. Pro includes monitoring on saved properties; add more anytime.</p></div>
+    <div class="feat"><h3>Rush lane — $99</h3>
+      <p>Priority processing: your report jumps the queue with guaranteed turnaround under 15 minutes.</p></div>
+    <div class="feat"><h3>Portfolio runs — from $99/address</h3>
+      <p>Upload 20+ addresses at once and get the full report set back in one batch. Built for asset managers and REO desks.</p></div>
+    <div class="feat"><h3>Material Intelligence — $79/analysis</h3>
+      <p>True-scope ARV from the actual materials, a la carte for pay-as-you-go users. Included with Pro.</p></div>
+    <div class="feat"><h3>Co-branded lender PDF — $250/mo</h3>
+      <p>Your logo and disclaimers on every report your borrowers order. Your brand on the document they take to closing.</p></div>
+    <div class="feat"><h3>90-day re-certification — $149</h3>
+      <p>Re-run any past report with fresh comps and current market data — same property, updated number, full PDF.</p></div>
+  </div>
 </div></section>`;
 
 const API_BAND = `<section class="api-band" id="api"><div class="wrap">
