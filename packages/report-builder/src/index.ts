@@ -14,3 +14,4 @@ export type {
 export { DEFAULT_BRANDING, resolveBranding, tierColor } from './branding.ts';
 export type { Branding } from './branding.ts';
 export { reportCss } from './styles.ts';
+export { WORDMARK_DATA_URI, VMARK_SVG, VMARK_DATA_URI, FAVICON_LINK, wordmarkImg } from './brandAssets.ts';

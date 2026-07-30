@@ -1,3 +1,5 @@
+import { VMARK_SVG, FAVICON_LINK, wordmarkImg } from '../../report-builder/src/brandAssets.ts';
+
 /**
  * ValueProof — Public marketing page (the retail front end).
  * Served at `/` for the world: retail investors buy reports, lenders join Pro,
@@ -26,8 +28,10 @@ a { color: ${GREEN}; }
 
 .topbar { background: ${NAVY}; border-bottom: 3px solid ${GOLD}; }
 .topbar .wrap { display: flex; align-items: center; height: 62px; gap: 24px; }
-.wordmark { font-family: Georgia, serif; font-size: 20px; letter-spacing: .06em; color: #fff; text-decoration: none; }
+.wordmark { font-family: Georgia, serif; font-size: 20px; letter-spacing: .06em; color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
 .wordmark b { color: ${GOLD}; }
+.logo-chip { background: #fff; border-radius: 7px; padding: 3px 4px 1px; display: inline-flex; }
+.logo-chip svg { height: 22px; width: 22px; display: block; }
 .topnav { flex: 1; display: flex; gap: 20px; }
 .topnav a { color: #C9CFD8; text-decoration: none; font-size: 14px; }
 .topnav a:hover { color: #fff; }
@@ -113,13 +117,14 @@ export function marketingPage(): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ValueProof — As-Is value + ARV in three rehab tiers, in minutes</title>
+${FAVICON_LINK}
 <meta name="description" content="AI property valuations for real-estate investors and private lenders: As-Is value plus after-repair value across Light, Medium, and High rehab scopes, grounded in comps, with a lender-ready PDF. Business-purpose use only.">
 <style>${CSS}</style>
 </head>
 <body>
 
 <div class="topbar"><div class="wrap">
-  <a class="wordmark" href="/">Value<b>Proof</b>.</a>
+  <a class="wordmark" href="/"><span class="logo-chip">${VMARK_SVG}</span>Value<b>Proof</b>.</a>
   <nav class="topnav">
     <a href="#how">How it works</a>
     <a href="#material">Material Intelligence</a>
@@ -143,6 +148,7 @@ export function marketingPage(): string {
     <p class="fine">Automated estimates, not licensed appraisals · Business-purpose, non-owner-occupied use only</p>
   </div>
   <div class="report-card">
+    <div style="margin-bottom:10px">${wordmarkImg(30)}</div>
     <div class="addr">SAMPLE REPORT · 1420 Ashby St · 3bd/2ba · 1,800 sqft</div>
     <div class="vals">
       <div class="val"><div class="lbl">As-Is value</div><div class="num">$412,000</div><div class="conf">Confidence: High</div></div>

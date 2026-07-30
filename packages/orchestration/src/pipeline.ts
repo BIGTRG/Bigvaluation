@@ -77,8 +77,14 @@ export function buildDefaultStages(deps: PipelineDeps): StageDefinition[] {
       required: false,
       handler: async (ctx) => {
         if (!deps.render) return {};
-        const renders = await deps.render(ctx.context.valuation as Valuation, ctx.asOf, ctx.input);
-        return { renders };
+        const out = await deps.render(ctx.context.valuation as Valuation, ctx.asOf, ctx.input);
+        // Renderers may return { renders, photoRenders } (per-photo all-tier
+        // renders, §4.4) or the plain per-tier renders object (legacy shape).
+        if (out && typeof out === 'object' && 'photoRenders' in (out as Record<string, unknown>)) {
+          const o = out as { renders?: unknown; photoRenders?: unknown };
+          return { renders: o.renders ?? {}, photoRenders: o.photoRenders };
+        }
+        return { renders: out };
       },
     },
     {
@@ -98,6 +104,15 @@ export function buildDefaultStages(deps: PipelineDeps): StageDefinition[] {
         // §4.4: renders produced by the visualize stage flow into the report.
         if (!meta.renders && ctx.context.renders && typeof ctx.context.renders === 'object') {
           meta.renders = ctx.context.renders as ReportMeta['renders'];
+        }
+        // §4.4: per-photo all-tier renders (before → Light / Medium / High).
+        if (!meta.photoRenders && Array.isArray(ctx.context.photoRenders)) {
+          meta.photoRenders = ctx.context.photoRenders as ReportMeta['photoRenders'];
+        }
+        // §4.1: the Vision materials read surfaces in the report.
+        const visionResult = ctx.input._visionResult as { materials?: ReportMeta['materialsObserved'] } | undefined;
+        if (!meta.materialsObserved && visionResult?.materials?.length) {
+          meta.materialsObserved = visionResult.materials;
         }
         const html = renderReport({
           valuation,

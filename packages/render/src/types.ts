@@ -43,3 +43,14 @@ export interface RoomRenders {
   renovated?: string;
   staged?: string;
 }
+
+/** One photo rendered at every rehab tier (§3 photo renders section). */
+export interface PhotoTierRenders {
+  /** Room / area label shown in the report. */
+  label: string;
+  /** The original (before) photo URL. */
+  before: string;
+  light?: string;
+  medium?: string;
+  high?: string;
+}

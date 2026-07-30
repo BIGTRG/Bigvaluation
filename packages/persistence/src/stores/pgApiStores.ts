@@ -16,6 +16,8 @@ import type {
   CaptureSession,
   ScopeStore,
   ScopeOfWork,
+  PhotoStore,
+  PhotoRecord,
 } from '../../../api/src/index.ts';
 import type { SqlClient } from '../sql.ts';
 import { toNumber, toNumberOrUndef, toJson } from '../sql.ts';
@@ -383,5 +385,43 @@ function rowToLink(r: Record<string, unknown>): MaterialLinkRecord {
     analysisId: r.analysis_id == null ? undefined : String(r.analysis_id),
     createdAt: toNumber(r.created_at),
     submittedAt: r.submitted_at == null ? undefined : toNumber(r.submitted_at),
+  };
+}
+
+// --- Property photos (§4.1) --------------------------------------------------
+
+export class PgPhotoStore implements PhotoStore {
+  private readonly db: SqlClient;
+  constructor(db: SqlClient) {
+    this.db = db;
+  }
+  async insert(p: PhotoRecord): Promise<void> {
+    await this.db.query(
+      `INSERT INTO property_photos (id, account_id, label, media_type, data_base64, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [p.id, p.accountId, p.label ?? null, p.mediaType, p.dataBase64, p.createdAt],
+    );
+  }
+  async findById(id: string): Promise<PhotoRecord | null> {
+    const rows = await this.db.query('SELECT * FROM property_photos WHERE id = $1', [id]);
+    return rows.length ? rowToPhoto(rows[0]) : null;
+  }
+  async listByAccount(accountId: string, limit = 100): Promise<PhotoRecord[]> {
+    const rows = await this.db.query(
+      'SELECT * FROM property_photos WHERE account_id = $1 ORDER BY created_at DESC LIMIT $2',
+      [accountId, limit],
+    );
+    return rows.map(rowToPhoto);
+  }
+}
+
+function rowToPhoto(r: Record<string, unknown>): PhotoRecord {
+  return {
+    id: String(r.id),
+    accountId: String(r.account_id),
+    label: r.label == null ? undefined : String(r.label),
+    mediaType: String(r.media_type) as PhotoRecord['mediaType'],
+    dataBase64: String(r.data_base64),
+    createdAt: toNumber(r.created_at),
   };
 }

@@ -25,6 +25,7 @@ import {
   InMemoryMaterialAnalysisStore,
   InMemoryMaterialLinkStore,
 } from './stores.ts';
+import { InMemoryPhotoStore } from './photos.ts';
 
 export interface DemoApi {
   api: Api;
@@ -85,6 +86,7 @@ export function createDemoApi(opts: { clock?: { now: () => number }; idFactory?:
   const meter = new InMemoryMeterStore();
 
   const deps: AppDeps = {
+    photos: { store: new InMemoryPhotoStore(), baseUrl: 'https://api.example.com' },
     orchestrator,
     jobStore,
     apiKeys,

@@ -208,9 +208,24 @@ export class ConditionScorer {
 
     const summary = typeof obj.summary === 'string' ? obj.summary : '';
 
+    const materials: ConditionAssessment['materials'] = [];
+    if (Array.isArray(obj.materials)) {
+      for (const m of obj.materials) {
+        if (typeof m !== 'object' || m === null) continue;
+        const mm = m as Record<string, unknown>;
+        if (typeof mm.category !== 'string' || typeof mm.observed !== 'string') continue;
+        materials.push({
+          category: mm.category,
+          observed: mm.observed,
+          grade: typeof mm.grade === 'string' ? mm.grade : undefined,
+        });
+      }
+    }
+
     return {
       overallScore,
       dimensions,
+      materials,
       summary,
       photosAnalyzed: photoCount,
       model: this.model,

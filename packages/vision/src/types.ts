@@ -25,12 +25,24 @@ export interface DimensionAssessment {
   reasoning: string;
 }
 
+/** One visible material read from the photos (siding, flooring, ...). */
+export interface MaterialObservation {
+  /** 'siding' | 'windows' | 'flooring' | 'paint' | 'trim' | 'countertops' | 'cabinets' | 'roofing'. */
+  category: string;
+  /** What was seen, e.g. 'vinyl siding, faded south face'. */
+  observed: string;
+  /** Quality grade: 'builder' | 'standard' | 'premium'. */
+  grade?: string;
+}
+
 /** Full condition assessment returned by the Vision module. */
 export interface ConditionAssessment {
   /** Overall condition score 1–5, drives the valuation engine's ConditionFactor. */
   overallScore: ConditionScore;
   /** Per-dimension breakdown. */
   dimensions: DimensionAssessment[];
+  /** Visible materials read from the photos (drives renders + report). */
+  materials?: MaterialObservation[];
   /** Plain-language summary for the report (2–3 sentences). */
   summary: string;
   /** Number of photos analyzed. */

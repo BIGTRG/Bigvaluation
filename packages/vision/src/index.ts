@@ -18,7 +18,7 @@
 export { ConditionScorer, VisionError } from './scorer.ts';
 export type {
   PropertyPhoto,
-  ConditionAssessment,
+  ConditionAssessment, MaterialObservation,
   DimensionAssessment,
   VisionConfig,
   HttpPost,

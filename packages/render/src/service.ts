@@ -5,7 +5,7 @@
  * others (the pipeline treats visualize as best-effort).
  */
 
-import type { RenderProvider, RenderTier, RoomRenders } from './types.ts';
+import type { RenderProvider, RenderTier, RoomRenders, PhotoTierRenders } from './types.ts';
 
 export interface RenderJobInput {
   /** Captured room photos: room name → source image URL. */
@@ -63,6 +63,42 @@ export class RenderService {
       this.log?.(`staging failed for ${photo.room}: ${err instanceof Error ? err.message : String(err)}`);
     }
     return { room: photo.room, asIs: photo.url, renovated: renovated.url, staged };
+  }
+
+  /**
+   * Render every photo at all three rehab tiers (before → Light / Medium /
+   * High), for the report's photo-renders section. Renovation layer only —
+   * staging stays a per-scope feature. A tier failure leaves that cell empty;
+   * the photo row still ships with whatever rendered.
+   */
+  async renderTiers(input: {
+    photos: { label: string; url: string }[];
+    materials?: { label: string; category?: string }[];
+    /** Cap on photos rendered (3 vendor calls each). Default 4. */
+    maxPhotos?: number;
+  }): Promise<PhotoTierRenders[]> {
+    const tiers: RenderTier[] = ['light', 'medium', 'high'];
+    const photos = input.photos.slice(0, input.maxPhotos ?? 4);
+    const out: PhotoTierRenders[] = [];
+    for (const photo of photos) {
+      const row: PhotoTierRenders = { label: photo.label, before: photo.url };
+      for (const tier of tiers) {
+        try {
+          const r = await this.provider.render({
+            imageUrl: photo.url,
+            layer: 'renovate',
+            room: photo.label,
+            tier,
+            materials: input.materials,
+          });
+          row[tier] = r.url;
+        } catch (err) {
+          this.log?.(`tier render failed for ${photo.label}/${tier}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+      out.push(row);
+    }
+    return out;
   }
 }
 

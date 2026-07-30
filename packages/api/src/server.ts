@@ -9,7 +9,7 @@ import { createServer, type IncomingMessage, type ServerResponse, type Server } 
 import type { Api } from './app.ts';
 import type { ApiRequest, ApiResponse, Method } from './types.ts';
 
-const MAX_BODY_BYTES = 1_000_000; // 1 MB cap — reject oversized payloads
+const MAX_BODY_BYTES = 16_000_000; // 16 MB cap — allows base64 photo uploads (§4.1)
 
 /** Anything that turns an ApiRequest into an ApiResponse (e.g. the web app). */
 export interface RequestHandler {

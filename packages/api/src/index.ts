@@ -26,3 +26,5 @@ export {
   InMemoryMaterialAnalysisStore,
   InMemoryMaterialLinkStore,
 } from './stores.ts';
+export { InMemoryPhotoStore, PHOTO_MEDIA_TYPES, MAX_PHOTO_BASE64_LENGTH } from './photos.ts';
+export type { PhotoStore, PhotoRecord, PhotoMediaType } from './photos.ts';

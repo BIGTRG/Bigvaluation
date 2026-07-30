@@ -1,3 +1,5 @@
+import { wordmarkImg } from './brandAssets.ts';
+
 /**
  * ValueProof — Report Builder
  * Brand tokens (build brief §12). Everything name/logo/color lives here so the
@@ -35,7 +37,7 @@ export interface Branding {
 export const DEFAULT_BRANDING: Branding = {
   brandName: 'ValueProof',
   brandDomain: 'valueproof.net',
-  logoHtml: null,
+  logoHtml: wordmarkImg(40),
   colors: {
     navy: '#0D1B2A',
     gold: '#C8A15A',

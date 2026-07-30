@@ -17,6 +17,7 @@ import {
   PgBillingStore,
   PgMaterialAnalysisStore,
   PgMaterialLinkStore,
+  PgPhotoStore,
 } from './stores/pgApiStores.ts';
 
 export type { SqlClient, TransactionalSqlClient } from './sql.ts';
@@ -31,6 +32,7 @@ export {
   PgBillingStore,
   PgMaterialAnalysisStore,
   PgMaterialLinkStore,
+  PgPhotoStore,
 } from './stores/pgApiStores.ts';
 export { migrate, migrationFiles } from './migrate.ts';
 
@@ -46,6 +48,7 @@ export interface PgStores {
   billing: PgBillingStore;
   materialAnalyses: PgMaterialAnalysisStore;
   materialLinks: PgMaterialLinkStore;
+  photos: PgPhotoStore;
 }
 
 export function createPgStores(db: SqlClient): PgStores {
@@ -59,5 +62,6 @@ export function createPgStores(db: SqlClient): PgStores {
     billing: new PgBillingStore(db),
     materialAnalyses: new PgMaterialAnalysisStore(db),
     materialLinks: new PgMaterialLinkStore(db),
+    photos: new PgPhotoStore(db),
   };
 }

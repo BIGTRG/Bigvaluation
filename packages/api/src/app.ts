@@ -31,6 +31,9 @@ import {
   type Reasoner,
 } from '../../material-intelligence/src/index.ts';
 import type { MaterialAnalysisStore, MaterialLinkStore, MaterialAnalysisRecord, MaterialLinkRecord } from './types.ts';
+import { PHOTO_MEDIA_TYPES, MAX_PHOTO_BASE64_LENGTH } from './photos.ts';
+import type { PhotoStore, PhotoMediaType } from './photos.ts';
+import { randomBytes } from 'node:crypto';
 
 export interface AppDeps {
   orchestrator: Orchestrator;
@@ -49,6 +52,12 @@ export interface AppDeps {
   idFactory?: () => string;
   /** Base URL for the tokenized mobile capture link (§4.1). */
   captureBaseUrl?: string;
+  /** Property photo uploads (§4.1). Absent = photo routes return 409. */
+  photos?: {
+    store: PhotoStore;
+    /** Public base URL for photo links given to render vendors. */
+    baseUrl?: string;
+  };
   /** Material Intelligence (§4.3 add-on). Absent = routes return 409. */
   materials?: {
     analyses: MaterialAnalysisStore;
@@ -96,6 +105,8 @@ export class Api {
     r.add({ id: 'valuations.list', method: 'GET', pattern: '/valuations', scope: 'valuations:read', handler: this.listValuations });
     r.add({ id: 'valuations.get', method: 'GET', pattern: '/valuations/:id', scope: 'valuations:read', handler: this.getValuation });
     r.add({ id: 'reports.get', method: 'GET', pattern: '/reports/:id', scope: 'reports:read', handler: this.getReport });
+    r.add({ id: 'photos.create', method: 'POST', pattern: '/photos', scope: 'valuations:write', handler: this.createPhoto });
+    r.add({ id: 'photos.get', method: 'GET', pattern: '/photos/:id', public: true, handler: this.getPhoto });
     r.add({ id: 'watches.create', method: 'POST', pattern: '/watches', scope: 'watches:write', handler: this.createWatch });
     r.add({ id: 'watches.list', method: 'GET', pattern: '/watches', scope: 'watches:read', handler: this.listWatches });
     r.add({ id: 'captureSessions.create', method: 'POST', pattern: '/capture-sessions', scope: 'capture:write', handler: this.createCaptureSession });
@@ -163,9 +174,14 @@ export class Api {
     // attested per request and recorded on the job for the audit trail.
     const attestation = requireAttestation(body, ctx.now);
     if (isAttestationError(attestation)) return json(422, attestation);
+    // §4.1 photos: accept photo ids (uploaded via POST /photos), verify
+    // ownership, and attach refs with server-built public URLs. Client-sent
+    // URLs are ignored — the store is the source of truth.
+    const photos = await this.resolvePhotoRefs(body.photos, ctx.auth.accountId);
     const job = await this.deps.orchestrator.createJob({
       attestation,
       subject,
+      photos,
       conditionScore: numberOrUndef(body.conditionScore),
       deal: asObject(body.deal),
       rental: asObject(body.rental),
@@ -218,6 +234,76 @@ export class Api {
       };
     }
     return { status: 200, body: html, headers: { 'content-type': 'text/html; charset=utf-8' } };
+  };
+
+  /** Turn client photo ids into owned, server-URL photo refs (max 8). */
+  private async resolvePhotoRefs(
+    raw: unknown,
+    accountId: string,
+  ): Promise<{ id: string; room?: string; url: string }[] | undefined> {
+    if (!this.deps.photos || !Array.isArray(raw) || raw.length === 0) return undefined;
+    const base = this.deps.photos.baseUrl?.replace(/\/+$/, '') ?? '';
+    const refs: { id: string; room?: string; url: string }[] = [];
+    for (const entry of raw.slice(0, 8)) {
+      const id =
+        typeof entry === 'string'
+          ? entry
+          : entry && typeof (entry as Record<string, unknown>).id === 'string'
+            ? String((entry as Record<string, unknown>).id)
+            : undefined;
+      if (!id) continue;
+      const rec = await this.deps.photos.store.findById(id);
+      if (!rec || rec.accountId !== accountId) continue;
+      const room =
+        entry && typeof (entry as Record<string, unknown>).room === 'string'
+          ? String((entry as Record<string, unknown>).room)
+          : rec.label;
+      refs.push({ id, room, url: `${base}/photos/${id}` });
+    }
+    return refs.length ? refs : undefined;
+  }
+
+  /** POST /photos — upload a before-photo (base64) for vision + renders. */
+  private createPhoto = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.photos) return json(409, { error: 'photos_not_configured' });
+    const body = asObject(ctx.req.body);
+    const mediaType = body.mediaType;
+    const data = body.data;
+    if (typeof data !== 'string' || data.length === 0) {
+      return json(400, { error: 'invalid_request', detail: 'data (base64 image) is required' });
+    }
+    if (data.length > MAX_PHOTO_BASE64_LENGTH) {
+      return json(413, { error: 'photo_too_large', detail: 'max ~9 MB per photo' });
+    }
+    if (typeof mediaType !== 'string' || !PHOTO_MEDIA_TYPES.includes(mediaType as PhotoMediaType)) {
+      return json(400, { error: 'invalid_request', detail: `mediaType must be one of ${PHOTO_MEDIA_TYPES.join(', ')}` });
+    }
+    if (!/^[A-Za-z0-9+/=\s]+$/.test(data.slice(0, 4096))) {
+      return json(400, { error: 'invalid_request', detail: 'data must be base64' });
+    }
+    const photo = {
+      id: `ph_${randomBytes(16).toString('hex')}`,
+      accountId: ctx.auth.accountId,
+      label: typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 60) : undefined,
+      mediaType: mediaType as PhotoMediaType,
+      dataBase64: data.replace(/\s+/g, ''),
+      createdAt: ctx.now,
+    };
+    await this.deps.photos.store.insert(photo);
+    const base = this.deps.photos.baseUrl?.replace(/\/+$/, '') ?? '';
+    return json(201, { id: photo.id, label: photo.label, mediaType: photo.mediaType, url: `${base}/photos/${photo.id}` });
+  };
+
+  /** GET /photos/:id — serve the image bytes (unguessable id is the token). */
+  private getPhoto = async (ctx: HandlerCtx): Promise<ApiResponse> => {
+    if (!this.deps.photos) return json(409, { error: 'photos_not_configured' });
+    const photo = await this.deps.photos.store.findById(ctx.params.id);
+    if (!photo) return json(404, { error: 'not_found' });
+    return {
+      status: 200,
+      body: new Uint8Array(Buffer.from(photo.dataBase64, 'base64')),
+      headers: { 'content-type': photo.mediaType, 'cache-control': 'private, max-age=3600' },
+    };
   };
 
   private createWatch = async (ctx: HandlerCtx): Promise<ApiResponse> => {

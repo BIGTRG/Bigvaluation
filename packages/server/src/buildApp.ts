@@ -28,6 +28,7 @@ import { Api } from '../../api/src/index.ts';
 import type { AppDeps } from '../../api/src/index.ts';
 import {
   InMemoryApiKeyStore,
+  InMemoryPhotoStore,
   InMemoryMeterStore,
   InMemoryWatchStore,
   InMemoryCaptureSessionStore,
@@ -38,6 +39,8 @@ import {
 } from '../../api/src/index.ts';
 import type {
   ApiKeyStore,
+  PhotoStore,
+  PhotoRecord,
   MeterStore,
   WatchStore,
   CaptureSessionStore,
@@ -67,6 +70,8 @@ export interface StoresBundle {
   scopes: ScopeStore;
   materialAnalyses: MaterialAnalysisStore;
   materialLinks: MaterialLinkStore;
+  /** Uploaded property photos (§4.1) — vision input + render vendor source. */
+  photos: PhotoStore;
   /** Billing plan state (§5); present with Postgres, in-memory otherwise. */
   billing?: BillingStore;
 }
@@ -100,10 +105,37 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     // When ANTHROPIC_API_KEY is set, uses Claude Sonnet vision to score photos.
     // Otherwise, callers pass conditionScore in the request (else default 3).
     vision: cfg.anthropicApiKey
-      ? new ConditionScorer({
-          apiKey: cfg.anthropicApiKey,
-          model: cfg.visionModel,
-        }).visionHandler()
+      ? (() => {
+          const handler = new ConditionScorer({
+            apiKey: cfg.anthropicApiKey,
+            model: cfg.visionModel,
+          }).visionHandler();
+          // Job inputs carry photo REFS ({ id, label, url }); hydrate base64
+          // from the photo store before handing them to Claude vision.
+          return async (input: Record<string, unknown>, asOf: string) => {
+            const refs = Array.isArray(input.photos) ? (input.photos as Record<string, unknown>[]) : [];
+            const hydrated: { data: string; mediaType: string; label?: string }[] = [];
+            for (const ref of refs) {
+              if (ref && typeof ref.data === 'string') {
+                hydrated.push(ref as unknown as { data: string; mediaType: string; label?: string });
+                continue;
+              }
+              const id = ref && typeof ref.id === 'string' ? ref.id : undefined;
+              if (!id) continue;
+              const rec: PhotoRecord | null = await stores.photos.findById(id);
+              if (rec && rec.accountId === input.accountId) {
+                hydrated.push({ data: rec.dataBase64, mediaType: rec.mediaType, label: rec.label ?? (typeof ref.room === 'string' ? ref.room : undefined) });
+              }
+            }
+            if (hydrated.length === 0) return (input.conditionScore as number | undefined) ?? 3;
+            const probe: Record<string, unknown> = { ...input, photos: hydrated };
+            const score = await handler(probe, asOf);
+            // visionHandler stashes the full assessment on the object it was
+            // given; copy it back so the deliver stage (report) can read it.
+            if (probe._visionResult) input._visionResult = probe._visionResult;
+            return score;
+          };
+        })()
       : undefined,
     // §4.4 Renders: dual-layer (renovate + stage) via the swappable connector.
     // Enabled when RENDER_API_URL + RENDER_API_KEY are set and the job carries
@@ -115,16 +147,26 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
             log: (msg) => console.warn(`[render] ${msg}`),
           });
           return async (_valuation: unknown, _asOf: string, input?: Record<string, unknown>) => {
-            const photos = Array.isArray(input?.photos)
-              ? (input.photos as { room: string; url: string }[]).filter((p) => p?.room && p?.url)
-              : [];
+            const refs = Array.isArray(input?.photos) ? (input.photos as Record<string, unknown>[]) : [];
+            const photos = refs
+              .map((p) => ({
+                label: typeof p.room === 'string' ? p.room : typeof p.label === 'string' ? p.label : 'photo',
+                url: typeof p.url === 'string' ? p.url : '',
+              }))
+              .filter((p) => p.url);
             if (photos.length === 0) return {};
             const tier = (typeof input?.renderTier === 'string' ? input.renderTier : 'medium') as RenderTier;
+            // Materials priority: explicit SOW materials, else the Vision read.
+            const vision = input?._visionResult as { materials?: { category: string; observed: string }[] } | undefined;
             const materials = Array.isArray(input?.materials)
               ? (input.materials as { label: string }[])
-              : undefined;
-            const rooms = await service.renderAll({ photos, tier, materials });
-            return toReportRenders(rooms, tier);
+              : vision?.materials?.map((m) => ({ label: m.observed, category: m.category }));
+            // One pass renders every photo at all three tiers (§4.4); the
+            // legacy per-tier hero shape is derived from the same results.
+            const photoRenders = await service.renderTiers({ photos, materials });
+            const hero = photoRenders.find((r) => r[tier]) ?? photoRenders[0];
+            const renders = hero ? { [tier]: { asIs: hero.before, renovated: hero[tier] } } : {};
+            return { renders, photoRenders };
           };
         })()
       : undefined,
@@ -169,6 +211,8 @@ export async function buildApp(cfg: ServerConfig): Promise<BuiltApp> {
     pdf,
     billing,
     captureBaseUrl: cfg.captureBaseUrl,
+    // §4.1 photo uploads — vision input + public URLs for the render vendor.
+    photos: { store: stores.photos, baseUrl: cfg.appBaseUrl },
     // Material Intelligence (§4.3 add-on) — analyst runs + send-a-link flow.
     materials: {
       analyses: stores.materialAnalyses,
@@ -276,6 +320,7 @@ async function buildStores(
     scopes: new InMemoryScopeStore(),
     materialAnalyses: new InMemoryMaterialAnalysisStore(),
     materialLinks: new InMemoryMaterialLinkStore(),
+    photos: new InMemoryPhotoStore(),
     billing: new InMemoryBillingStore(),
   };
   return { stores, storage: 'memory', dispose: async () => {} };

@@ -110,6 +110,14 @@ export function newValuationPage(flash?: Flash): string {
     </div>
   </div>
 
+  <div>
+    <label for="photoFiles">Property photos (optional)</label>
+    <input type="file" id="photoFiles" accept="image/jpeg,image/png,image/webp" multiple>
+    <p class="hint">Up to 8 photos. The AI reads condition + materials (siding, windows, flooring, paint, trim) and the report shows each photo rendered at all three rehab levels.</p>
+    <div id="photoList" class="photo-list"></div>
+    <input type="hidden" id="photoIds" name="photoIds" value="">
+  </div>
+
   <div class="attestation">
     <h3>Business-purpose attestation (required)</h3>
     <label><input type="checkbox" name="businessPurpose" value="true" required>
@@ -119,11 +127,55 @@ export function newValuationPage(flash?: Flash): string {
   </div>
 
   <div class="actions">
-    <button class="btn gold" type="submit">Run valuation</button>
+    <button class="btn gold" type="submit" id="runBtn">Run valuation</button>
     <span class="hint">Typically completes in under a minute.</span>
   </div>
 </form>
-</div>`);
+</div>
+<script>
+(function () {
+  var input = document.getElementById('photoFiles');
+  var list = document.getElementById('photoList');
+  var idsEl = document.getElementById('photoIds');
+  var btn = document.getElementById('runBtn');
+  var ids = [];
+  if (!input) return;
+  input.addEventListener('change', function () {
+    var files = Array.prototype.slice.call(input.files || []);
+    files.forEach(function (file) {
+      if (ids.length >= 8) return;
+      if (file.size > 9000000) { note(file.name + ' — too large (9 MB max)', true); return; }
+      var row = note('Uploading ' + file.name + '…', false);
+      var reader = new FileReader();
+      reader.onload = function () {
+        var b64 = String(reader.result).split(',')[1];
+        btn.disabled = true;
+        fetch('/app/photos', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ data: b64, mediaType: file.type, label: file.name.replace(/\.[^.]+$/, '').slice(0, 60) })
+        })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+          .then(function (res) {
+            if (res.ok && res.j.id) { ids.push(res.j.id); idsEl.value = ids.join(','); row.textContent = '\u2713 ' + file.name; }
+            else { row.textContent = '\u2717 ' + file.name + ' — ' + (res.j.detail || res.j.error || 'upload failed'); row.className = 'hint err'; }
+          })
+          .catch(function () { row.textContent = '\u2717 ' + file.name + ' — upload failed'; row.className = 'hint err'; })
+          .then(function () { btn.disabled = false; });
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  });
+  function note(text, isErr) {
+    var el = document.createElement('div');
+    el.className = 'hint' + (isErr ? ' err' : '');
+    el.textContent = text;
+    list.appendChild(el);
+    return el;
+  }
+})();
+</script>`);
 }
 
 export interface WatchRow {
@@ -165,6 +217,14 @@ ${rows
   <input type="text" id="waddress" name="address" placeholder="123 Main St, Raleigh, NC 27601" required>
   <label for="webhookUrl">Webhook URL (optional)</label>
   <input type="url" id="webhookUrl" name="webhookUrl" placeholder="https://your-system.example.com/hooks/value-change">
+  <div>
+    <label for="photoFiles">Property photos (optional)</label>
+    <input type="file" id="photoFiles" accept="image/jpeg,image/png,image/webp" multiple>
+    <p class="hint">Up to 8 photos. The AI reads condition + materials (siding, windows, flooring, paint, trim) and the report shows each photo rendered at all three rehab levels.</p>
+    <div id="photoList" class="photo-list"></div>
+    <input type="hidden" id="photoIds" name="photoIds" value="">
+  </div>
+
   <div class="attestation">
     <h3>Business-purpose attestation (required)</h3>
     <label><input type="checkbox" name="businessPurpose" value="true" required> Business-purpose decision, not consumer credit.</label>

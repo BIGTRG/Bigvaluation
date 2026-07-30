@@ -1,3 +1,5 @@
+import { VMARK_SVG, FAVICON_LINK } from '../../report-builder/src/brandAssets.ts';
+
 /**
  * ValueProof — Web app shell + design system
  * Custom, self-contained design on the §12 concept palette: deep navy, gold,
@@ -40,8 +42,10 @@ h1, h2, h3, .wordmark, .stat-value { font-family: Georgia, "Times New Roman", se
   background: var(--navy); color: #EDE8DC; display: flex; align-items: center;
   gap: 28px; padding: 0 28px; height: 60px; border-bottom: 3px solid var(--gold);
 }
-.wordmark { font-size: 19px; letter-spacing: 0.06em; color: #fff; text-decoration: none; white-space: nowrap; }
+.wordmark { font-size: 19px; letter-spacing: 0.06em; color: #fff; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; }
 .wordmark b { color: var(--gold); font-weight: 700; }
+.logo-chip { background: #fff; border-radius: 7px; padding: 3px 4px 1px; display: inline-flex; }
+.logo-chip svg { height: 20px; width: 20px; display: block; }
 .nav { display: flex; gap: 4px; flex: 1; }
 .nav a {
   color: #C9CFD8; text-decoration: none; padding: 7px 14px; border-radius: 6px; font-size: 14px;
@@ -88,6 +92,8 @@ form.stack input[type="text"], form.stack input[type="number"], form.stack input
 form.stack input:focus { outline: 2px solid var(--gold); border-color: var(--gold); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.hint.err { color: #b3392f; }
+.photo-list { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
 
 .attestation {
   background: #FAF6ED; border: 1px solid var(--gold); border-radius: 8px; padding: 16px 18px; margin-top: 20px;
@@ -152,11 +158,12 @@ export function page(opts: PageOptions, body: string): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(opts.title)} — ValueProof</title>
+${FAVICON_LINK}
 <style>${STYLES}</style>
 </head>
 <body>
 <header class="topbar">
-  <a class="wordmark" href="/app">ValueProof<b>.</b></a>
+  <a class="wordmark" href="/app"><span class="logo-chip">${VMARK_SVG}</span>ValueProof<b>.</b></a>
   ${nav}
 </header>
 <main class="wrap">

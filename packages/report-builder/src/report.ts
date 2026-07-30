@@ -24,6 +24,10 @@ export interface ReportMeta {
   subjectPhotoUrl?: string;
   /** AI renders per tier: as-is / renovated / staged image URLs (§4.4). */
   renders?: Partial<Record<Tier, { asIs?: string; renovated?: string; staged?: string }>>;
+  /** Uploaded photos rendered at every rehab tier (§4.4 photo renders). */
+  photoRenders?: { label: string; before: string; light?: string; medium?: string; high?: string }[];
+  /** Materials the Vision module read from the photos (§4.1). */
+  materialsObserved?: { category: string; observed: string; grade?: string }[];
 }
 
 export interface ReportOptions {
@@ -60,6 +64,8 @@ export function renderReport(input: RenderReportInput): string {
     section(areaPricePerSqft(b, v, finishedSqft, input.comps)),
     section(compsTable(b, v)),
     section(renders(b, v, meta)),
+    meta.photoRenders?.length ? section(photoTierRenders(b, meta)) : '',
+    meta.materialsObserved?.length ? section(materialsObserved(b, meta)) : '',
     section(confidenceMethod(b, v)),
     section(certificationBlock(b, meta)),
     footer(b, meta),
@@ -276,6 +282,45 @@ function renders(b: Branding, v: Valuation, meta: ReportMeta): string {
     ${cell('Renovated', r?.renovated)}
     ${cell('Renovated + Staged', r?.staged)}
   </div>`;
+}
+
+function photoTierRenders(b: Branding, meta: ReportMeta): string {
+  const rows = (meta.photoRenders ?? [])
+    .map((p) => {
+      const cell = (label: string, url?: string) =>
+        url
+          ? `<figure class="render"><img alt="${esc(`${p.label} — ${label}`)}" src="${esc(url)}"/><figcaption>${esc(label)}</figcaption></figure>`
+          : `<figure class="render render--empty"><div class="render-ph">${esc(label)}</div><figcaption>${esc(label)}</figcaption></figure>`;
+      return `
+  <h3 class="photo-label">${esc(p.label)}</h3>
+  <div class="renders renders-4">
+    ${cell('Before', p.before)}
+    ${cell('Light', p.light)}
+    ${cell('Medium', p.medium)}
+    ${cell('High', p.high)}
+  </div>`;
+    })
+    .join('\n');
+  return `
+  <h2>Photo renders — before &amp; all three scopes</h2>
+  <p class="section-note">Each uploaded photo rendered at the Light / Medium / High finish levels driving the tier ARVs.</p>
+  ${rows}`;
+}
+
+function materialsObserved(b: Branding, meta: ReportMeta): string {
+  const rows = (meta.materialsObserved ?? [])
+    .map(
+      (m) =>
+        `<tr><td class="mat-cat">${esc(m.category)}</td><td>${esc(m.observed)}</td><td>${esc(m.grade ?? '\u2014')}</td></tr>`,
+    )
+    .join('');
+  return `
+  <h2>Materials read from photos</h2>
+  <p class="section-note">AI read of visible materials and quality grade; feeds the condition score and render finish levels.</p>
+  <table class="matrix">
+    <thead><tr><th scope="col">Category</th><th scope="col">Observed</th><th scope="col">Grade</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
 }
 
 function confidenceMethod(b: Branding, v: Valuation): string {

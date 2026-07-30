@@ -112,6 +112,10 @@ table.comps a:hover { text-decoration: underline; }
 
 /* Renders */
 .renders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.renders-4 { grid-template-columns: repeat(4, 1fr); }
+.photo-label { margin: 14px 0 6px; font-size: 13px; text-transform: capitalize; }
+.mat-cat { text-transform: capitalize; font-weight: 600; }
+.render img { width: 100%; border-radius: 6px; display: block; }
 .render { margin: 0; }
 .render img { width: 100%; border-radius: 8px; display: block; }
 .render--empty .render-ph { aspect-ratio: 4 / 3; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; background: var(--surface-alt); }

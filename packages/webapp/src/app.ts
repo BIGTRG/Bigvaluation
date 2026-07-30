@@ -77,6 +77,7 @@ export class WebApp {
       if (req.path === '/app' && req.method === 'GET') return this.dashboard(key, flash);
       if (req.path === '/app/valuations/new' && req.method === 'GET') return html(newValuationPage(flash));
       if (req.path === '/app/valuations/new' && req.method === 'POST') return this.createValuation(req, key);
+      if (req.path === '/app/photos' && req.method === 'POST') return this.uploadPhoto(req, key);
       if (req.path === '/app/watches' && req.method === 'GET') return this.watches(key, flash);
       if (req.path === '/app/watches' && req.method === 'POST') return this.createWatch(req, key);
       if (req.path === '/app/billing' && req.method === 'GET') return this.billing(key, flash);
@@ -133,11 +134,24 @@ export class WebApp {
     if (price > 0) body.deal = { purchasePrice: price };
     const rent = Number(form.get('monthlyRent'));
     if (rent > 0) body.rental = { monthlyRent: rent };
+    // §4.1: photos uploaded ahead of submit via /app/photos → POST /photos.
+    const photoIds = (form.get('photoIds') ?? '').split(',').map((v) => v.trim()).filter(Boolean);
+    if (photoIds.length) body.photos = photoIds.slice(0, 8);
 
     const res = await this.callApi(key, 'POST', '/valuations', body);
     if (res.status === 422) return redirect('/app/valuations/new?m=attestation');
     if (res.status >= 400) return redirect('/app/valuations/new?m=failed');
     return redirect('/app?m=created');
+  }
+
+  /** JSON proxy for the form's photo uploader — same auth path as the API. */
+  private async uploadPhoto(req: ApiRequest, key: string): Promise<ApiResponse> {
+    const body = (typeof req.body === 'object' && req.body !== null ? req.body : {}) as Record<string, unknown>;
+    return this.callApi(key, 'POST', '/photos', {
+      data: body.data,
+      mediaType: body.mediaType,
+      label: body.label,
+    });
   }
 
   private async watches(key: string, flash?: (typeof FLASHES)[string]): Promise<ApiResponse> {
