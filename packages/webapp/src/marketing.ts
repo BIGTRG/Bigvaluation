@@ -219,9 +219,9 @@ const PRICING = `<section id="pricing"><div class="wrap">
         <li>Full report on any address</li>
         <li>As-Is + three ARV tiers</li>
         <li>Deal math &amp; rental value included</li>
-        <li>Lender-ready PDF</li>
+        <li>Lender-ready PDF, delivered straight to your email</li>
       </ul>
-      <div class="model">Per report</div>
+      <div class="model">$349 per report</div>
       <a class="btn btn-green" href="/app/login">Run a report</a>
     </div>
     <div class="plan featured">
@@ -229,24 +229,24 @@ const PRICING = `<section id="pricing"><div class="wrap">
       <div class="name">Pro Member</div>
       <div class="for">For active investors &amp; lenders</div>
       <ul>
-        <li>Discount on every report</li>
+        <li>Three full reports included every month</li>
         <li>Live monitoring on saved properties — values re-check automatically and alert you on movement</li>
         <li>Material Intelligence scope analysis</li>
         <li>Priority turnaround</li>
       </ul>
-      <div class="model">Monthly + discounted usage</div>
+      <div class="model">$595 / month · 3 reports included</div>
       <a class="btn btn-gold" href="/app/login">Get started</a>
     </div>
     <div class="plan">
       <div class="name">API Partner</div>
       <div class="for">For platforms &amp; lender systems</div>
       <ul>
-        <li>Direct REST API / white-label</li>
+        <li>Direct REST API / white-label — your brand, your price to your customers</li>
         <li>Valuations, scope analysis, watches, webhooks</li>
-        <li>Metered per-call or revenue share</li>
-        <li>Your brand, our engine</li>
+        <li>Rate limits you control</li>
+        <li>Hosted white-label portal available — $150 / month</li>
       </ul>
-      <div class="model">Volume / revenue share</div>
+      <div class="model">$149 wholesale per report · 5 / month minimum</div>
       <a class="btn btn-green" href="mailto:admin@trgtechlink.com?subject=ValueProof%20API%20licensing">Talk to us</a>
     </div>
   </div>
